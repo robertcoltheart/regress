@@ -9,6 +9,7 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "@typescript-eslint/member-ordering": "warn",
         "@typescript-eslint/class-name-casing": "warn",
         "@typescript-eslint/semi": "warn",
         "curly": "warn",

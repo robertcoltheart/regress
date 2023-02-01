@@ -1,14 +1,14 @@
 import * as azdata from "azdata";
 import * as vscode from "vscode";
 import { Client, ClientConfig, QueryResult } from "pg";
-import { DatabaseInfo, IDatabaseInfo } from "./models";
+import { DatabaseInfo } from "./models";
 
 export class AppContext {
     public static readonly CONNECTION_INFO_KEY = "host";
 
-    private clients = new Map<String, Client>();
+    private clients = new Map<string, Client>();
 
-    public async connect(server: string, connectionInfo: azdata.ConnectionInfo): Promise<Client | undefined> {
+    public async connect(host: string, connectionInfo: azdata.ConnectionInfo): Promise<Client | undefined> {
         try {
             let client = new Client({
                 host: connectionInfo.options["host"],
@@ -19,7 +19,7 @@ export class AppContext {
 
             await client.connect();
 
-            this.clients.set(server, client);
+            this.clients.set(host, client);
 
             return client;
         } catch (error) {
@@ -29,12 +29,12 @@ export class AppContext {
         }
     }
 
-    public async listDatabases(server: String): Promise<IDatabaseInfo[]> {
-        if (!this.clients.has(server)) {
+    public async listDatabases(host: string): Promise<DatabaseInfo[]> {
+        if (!this.clients.has(host)) {
             return [];
         }
 
-        const client = this.clients.get(server)!;
+        const client = this.clients.get(host)!;
 
         const result = await client.query(`
 SELECT
@@ -53,15 +53,9 @@ FROM
 LEFT OUTER JOIN pg_tablespace ta ON db.dattablespace = ta.oid
 ORDER BY datname;`);
 
-        const infos = result.rows.map<IDatabaseInfo>(x => ({
+        const infos = result.rows.map<DatabaseInfo>(x => ({
             oid: x.oid,
-            name: x.name,
-            spcname: x.spcname,
-            dataallowconn: x.dataallowconn,
-            cancreate: x.cancreate,
-            owner: x.owner,
-            canconnect: x.canconnect,
-            is_system: x.is_system
+            name: x.name
         }));
 
         return Promise.resolve(infos);

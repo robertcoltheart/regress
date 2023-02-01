@@ -6,16 +6,18 @@ import { AppContext } from "../appContext";
 export const ProviderId: string = "REGRESS_POSTGRESQL";
 
 export class ConnectionProvider implements azdata.ConnectionProvider {
-    constructor(private appContext: AppContext) {}
+    handle?: number | undefined;
+    providerId: string = "regress";
 
     private connectionUriToServerMap = new Map<string, string>();
 
-    private onConnectionCompleteEmitter: vscode.EventEmitter<azdata.ConnectionInfoSummary> = new vscode.EventEmitter();
-    onConnectionComplete: vscode.Event<azdata.ConnectionInfoSummary> = this.onConnectionCompleteEmitter.event;
+    private onConnectionComplete: vscode.EventEmitter<azdata.ConnectionInfoSummary> = new vscode.EventEmitter();
+
+    constructor(private appContext: AppContext) {}
 
     async connect(connectionUri: string, connectionInfo: azdata.ConnectionInfo): Promise<boolean> {
         const showErrorMessage = (errorMessage: string) => {
-            this.onConnectionCompleteEmitter.fire({
+            this.onConnectionComplete.fire({
                 ownerUri: connectionUri,
                 errorMessage,
             });
@@ -36,7 +38,7 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
             return false;
         }
 
-        this.onConnectionCompleteEmitter.fire({
+        this.onConnectionComplete.fire({
             connectionId: uuid(),
             ownerUri: connectionUri,
             messages: "",
@@ -67,8 +69,6 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     cancelConnect(connectionUri: string): Thenable<boolean> {
-        console.log("ConnectionProvider.cancelConnect");
-
         return Promise.resolve(true);
     }
 
@@ -77,14 +77,10 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     changeDatabase(connectionUri: string, newDatabase: string): Thenable<boolean> {
-        console.log("ConnectionProvider.changeDatabase");
-
         return Promise.resolve(true);
     }
 
     rebuildIntelliSenseCache(connectionUri: string): Thenable<void> {
-        console.log("ConnectionProvider.rebuildIntelliSenseCache");
-
         return Promise.resolve();
     }
 
@@ -97,21 +93,14 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     registerOnConnectionComplete(handler: (connSummary: azdata.ConnectionInfoSummary) => any): void {
-        console.log("ConnectionProvider.registerOnConnectionComplete");
-
-        this.onConnectionComplete((e) => {
+        this.onConnectionComplete.event((e) => {
           handler(e);
         });
     }
 
     registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any): void {
-        console.log("IntellisenseCache complete");
     }
 
     registerOnConnectionChanged(handler: (changedConnInfo: azdata.ChangedConnectionInfo) => any): void {
-        console.log("Connection changed");
     }
-
-    handle?: number | undefined;
-    providerId: string = ProviderId;
 }

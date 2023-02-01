@@ -4,48 +4,28 @@ import * as nls from "vscode-nls";
 import { AppContext } from "../appContext";
 import { ProviderId } from "./connectionProvider";
 
-const localize = nls.loadMessageBundle();
-
-export const getPostgresInfo = (
-    nodePath: string
-): { serverName: string; databaseName?: string; collectionName?: string } => {
-    const pathComponents = nodePath?.split("/");
-    const slashCount = pathComponents.length - 1;
-
-    switch (slashCount) {
-        case 0:
-            return { serverName: pathComponents[0] };
-        case 1:
-            return { serverName: pathComponents[0], databaseName: pathComponents[1] };
-        default:
-            throw new Error(localize("unrecognizedPath", "Unrecognized path {0}", nodePath));
-    }
-};
-
 export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
-    onSessionCreatedEmitter: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter<azdata.ObjectExplorerSession>();
-    onSessionCreated: vscode.Event<azdata.ObjectExplorerSession> = this.onSessionCreatedEmitter.event;
+    handle?: number | undefined;
+    providerId: string = ProviderId;
 
-    onSessionDisconnectedEmitter: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter<azdata.ObjectExplorerSession>();
-    onSessionDisconnected: vscode.Event<azdata.ObjectExplorerSession> = this.onSessionDisconnectedEmitter.event;
+    onSessionCreated: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter();
+    onSessionDisconnected: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter();
+    onExpandCompleted: vscode.EventEmitter<azdata.ObjectExplorerExpandInfo> = new vscode.EventEmitter();
 
-    onExpandCompletedEmitter: vscode.EventEmitter<azdata.ObjectExplorerExpandInfo> = new vscode.EventEmitter<azdata.ObjectExplorerExpandInfo>();
-    onExpandCompleted: vscode.Event<azdata.ObjectExplorerExpandInfo> = this.onExpandCompletedEmitter.event;
+    constructor(private appContext: AppContext) {}
 
     createNewSession(connectionInfo: azdata.ConnectionInfo): Thenable<azdata.ObjectExplorerSessionResponse> {
-        console.log("ObjectExplorerProvider.createNewSession", connectionInfo);
-
         const server = connectionInfo.options[AppContext.CONNECTION_INFO_KEY];
         const sessionId = server;
 
         setTimeout(() => {
-            this.onSessionCreatedEmitter.fire({
+            this.onSessionCreated.fire({
                 sessionId,
                 success: true,
                 rootNode: {
                     nodePath: server,
                     nodeType: "server",
-                    label: "_not_used_",
+                    label: "",
                     isLeaf: false,
                 },
             });
@@ -61,24 +41,18 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     }
 
     registerOnSessionCreated(handler: (response: azdata.ObjectExplorerSession) => any): void {
-        console.log("ObjectExplorerProvider.registerOnSessionCreated");
-
-        this.onSessionCreated((e) => {
+        this.onSessionCreated.event((e) => {
             handler(e);
         });
     }
 
     registerOnSessionDisconnected?(handler: (response: azdata.ObjectExplorerSession) => any): void {
-        console.log("ObjectExplorerProvider.registerOnSessionDisconnected");
-
-        this.onSessionDisconnected((e) => {
+        this.onSessionDisconnected.event((e) => {
             handler(e);
         });
     }
 
     expandNode(nodeInfo: azdata.ExpandNodeInfo): Thenable<boolean> {
-        console.log(`ObjectExplorerProvider.expandNode ${nodeInfo.nodePath} ${nodeInfo.sessionId}`);
-
         return this.executeExpandNode(nodeInfo);
     }
 
@@ -91,9 +65,7 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     }
 
     registerOnExpandCompleted(handler: (response: azdata.ObjectExplorerExpandInfo) => any): void {
-        console.log("ObjectExplorerProvider.registerOnExpandCompleted");
-
-        this.onExpandCompleted((e) => {
+        this.onExpandCompleted.event((e) => {
             handler(e);
         });
     }
@@ -103,11 +75,48 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
             throw new Error("nodeInfo.nodePath is undefined");
         }
 
-        const dbInfo = getPostgresInfo(nodeInfo.nodePath);
+        const dbInfo = this.getPostgresInfo(nodeInfo.nodePath);
 
+        if (dbInfo.database !== undefined) {
+            return this.expandDatabase(nodeInfo, dbInfo.host, dbInfo.database);
+        }
+
+        return this.expandHost(nodeInfo, dbInfo.host);
+    }
+
+    private expandHost(nodeInfo: azdata.ExpandNodeInfo, host: string): Thenable<boolean> {
+        return this.appContext.listDatabases(host)
+            .then((databases) => {
+                this.onExpandCompleted.fire(({
+                    sessionId: nodeInfo.sessionId,
+                    nodePath: nodeInfo.nodePath || "unknown",
+                    nodes: databases.map((db) => ({
+                        nodePath: `${nodeInfo.nodePath}/${db.name}`,
+                        nodeType: "Database",
+                        label: db.name,
+                        isLeaf: false
+                    }))
+                }));
+
+                return true;
+            });
+    }
+
+    private expandDatabase(nodeInfo: azdata.ExpandNodeInfo, host: string, database: string): Thenable<boolean> {
         return Promise.resolve(true);
     }
 
-    handle?: number | undefined;
-    providerId: string = ProviderId;
+    private getPostgresInfo(nodePath: string): { host: string, database?: string } {
+        const pathComponents = nodePath?.split("/");
+        const slashCount = pathComponents.length - 1;
+    
+        switch (slashCount) {
+            case 0:
+                return { host: pathComponents[0] };
+            case 1:
+                return { host: pathComponents[0], database: pathComponents[1] };
+            default:
+                throw new Error(`Unrecognized path ${nodePath}`);
+        }
+    }
 }

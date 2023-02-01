@@ -6,15 +6,12 @@ import { ConnectionProvider } from './providers/connectionProvider';
 import { IconProvider } from './providers/iconProvider';
 import { ObjectExplorerProvider } from './providers/objectExplorerProvider';
 import { AppContext } from './appContext';
+import { AdminServicesProvider } from './providers/adminServicesProvider';
+import { QueryProvider } from './providers/queryProvider';
 
 let appContext: AppContext;
 
 export function activate(context: vscode.ExtensionContext) {
-
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "regress" is now active!');
-
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
@@ -41,13 +38,16 @@ export function activate(context: vscode.ExtensionContext) {
 
     const connectionProvider = new ConnectionProvider(appContext);
     const iconProvider = new IconProvider();
-    const objectExplorerProvider = new ObjectExplorerProvider();
+    const objectExplorerProvider = new ObjectExplorerProvider(appContext);
+    const adminServicesProvider = new AdminServicesProvider();
+    const queryProvider = new QueryProvider();
 
     azdata.dataprotocol.registerConnectionProvider(connectionProvider);
     azdata.dataprotocol.registerIconProvider(iconProvider);
     azdata.dataprotocol.registerObjectExplorerProvider(objectExplorerProvider);
+    azdata.dataprotocol.registerAdminServicesProvider(adminServicesProvider);
+    azdata.dataprotocol.registerQueryProvider(queryProvider);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {
 }
