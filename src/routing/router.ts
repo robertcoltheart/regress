@@ -13,7 +13,17 @@ export interface Folder {
     path: string
 }
 
-
+type RegExpGroups<T extends string[]> =
+  | (RegExpMatchArray & {
+      groups?:
+        | {
+            [name in T[number]]: string;
+          }
+        | {
+            [key: string]: string;
+          };
+    })
+  | null;
 
 export class Router {
     private l: {pattern: RegExp, target: RoutingTarget}[] = [
@@ -22,7 +32,7 @@ export class Router {
 
     private map: Map<string, RoutingTarget> = new Map([
         [
-            "^/$", 
+            "^/$",
             new RoutingTarget(
                 this.generator,
                 { label: "Databases", path: "databases" },
@@ -41,7 +51,8 @@ export class Router {
     getRoutingTarget(nodePath: string): RoutingTarget | void {
         for (let item of this.l) {
             item.pattern.test(nodePath);
-            let matches = nodePath.match(item.pattern);
+            const match: RegExpGroups<["db", "dbid"]> = nodePath.match(item.pattern);
+            const { db, dbid } = match?.groups!;
         }
     }
 
