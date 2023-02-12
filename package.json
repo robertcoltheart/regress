@@ -36,23 +36,8 @@
       }
     ],
     "connectionProvider": {
-      "providerId": "REGRESS_POSTGRESQL",
+      "providerId": "regress",
       "displayName": "PostgreSQL (Regress)",
-      "isQueryProvider": false,
-      "connectionStringOptions": {
-        "isEnabled": true,
-        "isDefault": true
-      },
-      "iconPath": [
-        {
-          "id": "regress",
-          "path": {
-            "light": "images/extension-icon.png",
-            "dark": "images/extension-icon.png"
-          },
-          "default": true
-        }
-      ],
       "connectionOptions": [
         {
           "specialValueType": "connectionName",

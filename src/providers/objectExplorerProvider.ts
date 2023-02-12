@@ -1,12 +1,10 @@
 import * as azdata from "azdata";
 import * as vscode from "vscode";
-import * as nls from "vscode-nls";
 import { AppContext } from "../appContext";
-import { ProviderId } from "./connectionProvider";
 
 export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     handle?: number | undefined;
-    providerId: string = ProviderId;
+    providerId: string = "regress";
 
     onSessionCreated: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter();
     onSessionDisconnected: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter();
@@ -15,24 +13,30 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     constructor(private appContext: AppContext) {}
 
     createNewSession(connectionInfo: azdata.ConnectionInfo): Thenable<azdata.ObjectExplorerSessionResponse> {
-        const server = connectionInfo.options[AppContext.CONNECTION_INFO_KEY];
-        const sessionId = server;
+        const id = this.getSessionId(connectionInfo);
 
         setTimeout(() => {
             this.onSessionCreated.fire({
-                sessionId,
+                sessionId: id,
                 success: true,
                 rootNode: {
-                    nodePath: server,
-                    nodeType: "server",
-                    label: "",
+                    nodePath: id,
+                    nodeType: "Database",
+                    label: this.getDbName(connectionInfo),
                     isLeaf: false,
-                },
+                    metadata: {
+                        metadataType: azdata.MetadataType.Table,
+                        metadataTypeName: "Database",
+                        name: "maint",
+                        urn: "urn_base",
+                        schema: ""
+                    }
+                }
             });
         }, 0);
 
         return Promise.resolve({
-            sessionId,
+            sessionId: connectionInfo.options["host"],
         });
     }
 
@@ -68,6 +72,19 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
         this.onExpandCompleted.event((e) => {
             handler(e);
         });
+    }
+
+    private getDbName(connectionInfo: azdata.ConnectionInfo): string {
+        return connectionInfo.options["host"] ?? "postgres";
+    }
+
+    private getSessionId(connectionInfo: azdata.ConnectionInfo): string {
+        const db = connectionInfo.options["dbname"];
+        const user = connectionInfo.options["user"];
+        const port = connectionInfo.options["port"] ?? "5232";
+        const host = this.getDbName(connectionInfo);
+
+        return `objectexplorer://${user}@${host}:${port}:${db}/`
     }
 
     private executeExpandNode(nodeInfo: azdata.ExpandNodeInfo): Thenable<boolean> {
@@ -109,7 +126,7 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     private getPostgresInfo(nodePath: string): { host: string, database?: string } {
         const pathComponents = nodePath?.split("/");
         const slashCount = pathComponents.length - 1;
-    
+
         switch (slashCount) {
             case 0:
                 return { host: pathComponents[0] };

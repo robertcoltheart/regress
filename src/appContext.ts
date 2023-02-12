@@ -8,18 +8,25 @@ export class AppContext {
 
     private clients = new Map<string, Client>();
 
-    public async connect(host: string, connectionInfo: azdata.ConnectionInfo): Promise<Client | undefined> {
+    public async connect(ownerUri: string, connectionInfo: azdata.ConnectionInfo): Promise<Client | undefined> {
+        if (this.clients.has(ownerUri)) {
+            return this.clients.get(ownerUri);
+        }
+
+        const host = connectionInfo.options["host"];
+
         try {
             let client = new Client({
-                host: connectionInfo.options["host"],
-                database: "postgres",
+                host: host,
+                database: connectionInfo.options["dbname"],
                 user: connectionInfo.options["user"],
-                password: connectionInfo.options["password"]
+                password: connectionInfo.options["password"],
+                port: connectionInfo.options["port"] ?? "5432"
             });
 
             await client.connect();
 
-            this.clients.set(host, client);
+            this.clients.set(ownerUri, client);
 
             return client;
         } catch (error) {
@@ -29,12 +36,28 @@ export class AppContext {
         }
     }
 
-    public async listDatabases(host: string): Promise<DatabaseInfo[]> {
-        if (!this.clients.has(host)) {
-            return [];
+    public getclient(ownerUri: string): Client | undefined {
+        return this.clients.get(ownerUri);
+    }
+
+    public async disconnect(ownerUri: string): Promise<boolean> {
+        const client = this.clients.get(ownerUri);
+
+        if (!client) {
+            return false;
         }
 
-        const client = this.clients.get(host)!;
+        await client.end();
+
+        return this.clients.delete(ownerUri);
+    }
+
+    public async listDatabases(ownerUri: string): Promise<DatabaseInfo[]> {
+        const client = this.clients.get(ownerUri);
+
+        if (!client) {
+            return [];
+        }
 
         const result = await client.query(`
 SELECT
@@ -55,7 +78,8 @@ ORDER BY datname;`);
 
         const infos = result.rows.map<DatabaseInfo>(x => ({
             oid: x.oid,
-            name: x.name
+            name: x.name,
+            isSystem: x.is_system
         }));
 
         return Promise.resolve(infos);

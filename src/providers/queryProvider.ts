@@ -16,7 +16,15 @@ export class QueryProvider implements azdata.QueryProvider {
         throw new Error("Method not implemented.");
     }
 
-    runQuery(ownerUri: string, selection: azdata.ISelectionData, runOptions?: azdata.ExecutionPlanOptions | undefined): Thenable<void> {
+    async runQuery(ownerUri: string, selection: azdata.ISelectionData, runOptions?: azdata.ExecutionPlanOptions | undefined): Promise<void> {
+        const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(encodeURI(ownerUri)));
+        const content = document.getText();
+
+        this.onQueryComplete.fire({
+            ownerUri: ownerUri,
+            batchSummaries: []
+        });
+
         throw new Error("Method not implemented.");
     }
 
@@ -125,5 +133,5 @@ export class QueryProvider implements azdata.QueryProvider {
     }
 
     registerOnEditSessionReady(handler: (ownerUri: string, success: boolean, message: string) => any): void {
-    } 
+    }
 }

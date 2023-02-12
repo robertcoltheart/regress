@@ -39,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
     const connectionProvider = new ConnectionProvider(appContext);
     const iconProvider = new IconProvider();
     const objectExplorerProvider = new ObjectExplorerProvider(appContext);
-    const adminServicesProvider = new AdminServicesProvider();
+    const adminServicesProvider = new AdminServicesProvider(appContext);
     const queryProvider = new QueryProvider();
 
     azdata.dataprotocol.registerConnectionProvider(connectionProvider);

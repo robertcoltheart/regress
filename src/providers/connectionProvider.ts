@@ -3,37 +3,26 @@ import * as vscode from "vscode";
 import { v4 as uuid } from "uuid";
 import { AppContext } from "../appContext";
 
-export const ProviderId: string = "REGRESS_POSTGRESQL";
-
 export class ConnectionProvider implements azdata.ConnectionProvider {
     handle?: number | undefined;
     providerId: string = "regress";
-
-    private connectionUriToServerMap = new Map<string, string>();
 
     private onConnectionComplete: vscode.EventEmitter<azdata.ConnectionInfoSummary> = new vscode.EventEmitter();
 
     constructor(private appContext: AppContext) {}
 
     async connect(connectionUri: string, connectionInfo: azdata.ConnectionInfo): Promise<boolean> {
-        const showErrorMessage = (errorMessage: string) => {
-            this.onConnectionComplete.fire({
-                ownerUri: connectionUri,
-                errorMessage,
-            });
-        };
-
-        const server = connectionInfo.options[AppContext.CONNECTION_INFO_KEY];
-        this.connectionUriToServerMap.set(connectionUri, server);
-
         try {
-            if (!(await this.appContext.connect(server, connectionInfo))) {
+            if (!(await this.appContext.connect(connectionUri, connectionInfo))) {
                 vscode.window.showErrorMessage("Failed to connect");
 
                 return false;
             }
         } catch (e) {
-            showErrorMessage((e as { message: string }).message);
+            this.onConnectionComplete.fire({
+                ownerUri: connectionUri,
+                errorMessage: (e as { message: string}).message
+            });
 
             return false;
         }
@@ -45,8 +34,9 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
             errorMessage: "",
             errorNumber: 0,
             connectionSummary: {
-                serverName: "",
-                userName: "",
+                serverName: connectionInfo.options["host"],
+                userName: connectionInfo.options["username"],
+                databaseName: connectionInfo.options["dbname"]
             },
             serverInfo: {
                 serverReleaseVersion: 1,
@@ -54,26 +44,32 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
                 serverVersion: "1.0",
                 serverLevel: "",
                 serverEdition: "",
-                isCloud: true,
-                azureVersion: 1,
+                isCloud: false,
+                azureVersion: 0,
                 osVersion: "",
-                options: {},
-            },
+                options: {}
+            }
         });
 
         return Promise.resolve(true);
     }
 
-    disconnect(connectionUri: string): Thenable<boolean> {
-        throw new Error("Method not implemented.");
+    disconnect(connectionUri: string): Promise<boolean> {
+        return this.appContext.disconnect(connectionUri);
     }
 
     cancelConnect(connectionUri: string): Thenable<boolean> {
         return Promise.resolve(true);
     }
 
-    listDatabases(connectionUri: string): Thenable<azdata.ListDatabasesResult> {
-        throw new Error("Method not implemented.");
+    async listDatabases(connectionUri: string): Promise<azdata.ListDatabasesResult> {
+        const databases = await this.appContext.listDatabases(connectionUri);
+
+        return {
+            databaseNames: databases
+                .filter((db) => !db.isSystem)
+                .map((db) => db.name)
+        };
     }
 
     changeDatabase(connectionUri: string, newDatabase: string): Thenable<boolean> {
