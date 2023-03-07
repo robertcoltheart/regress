@@ -1,6 +1,10 @@
 import * as azdata from "azdata";
 import * as vscode from "vscode";
 import { AppContext } from "../appContext";
+import { Connection } from "../models/connection";
+import { Router } from "../routing/router";
+import { NodeInfo } from "azdata";
+import { ExplorerSession } from "../session/explorerSession";
 
 export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     handle?: number | undefined;
@@ -10,38 +14,50 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     onSessionDisconnected: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter();
     onExpandCompleted: vscode.EventEmitter<azdata.ObjectExplorerExpandInfo> = new vscode.EventEmitter();
 
+    private sessions = new Map<string, ExplorerSession>();
+
     constructor(private appContext: AppContext) {}
 
     createNewSession(connectionInfo: azdata.ConnectionInfo): Thenable<azdata.ObjectExplorerSessionResponse> {
-        const id = this.getSessionId(connectionInfo);
+        const connection = new Connection(connectionInfo);
 
-        setTimeout(() => {
-            this.onSessionCreated.fire({
-                sessionId: id,
-                success: true,
-                rootNode: {
-                    nodePath: id,
-                    nodeType: "Database",
-                    label: this.getDbName(connectionInfo),
-                    isLeaf: false,
-                    metadata: {
-                        metadataType: azdata.MetadataType.Table,
-                        metadataTypeName: "Database",
-                        name: "maint",
-                        urn: "urn_base",
-                        schema: ""
-                    }
+        this.onSessionCreated.fire({
+            sessionId: connection.getSessionId(),
+            success: true,
+            rootNode: {
+                nodePath: "/",
+                nodeType: "Database",
+                label: connection.database,
+                isLeaf: false,
+                metadata: {
+                    metadataType: azdata.MetadataType.Table,
+                    metadataTypeName: "Database",
+                    name: connection.getMaintenenceDb(),
+                    urn: connection.getUrnBase(),
+                    schema: ""
                 }
-            });
-        }, 0);
+            }
+        });
 
         return Promise.resolve({
-            sessionId: connectionInfo.options["host"],
+            sessionId: connection.getSessionId()
         });
     }
 
     closeSession(closeSessionInfo: azdata.ObjectExplorerCloseSessionInfo): Thenable<azdata.ObjectExplorerCloseSessionResponse> {
-        throw new Error("Method not implemented.");
+        if (closeSessionInfo.sessionId) {
+            this.sessions.delete(closeSessionInfo.sessionId);
+
+            return Promise.resolve({
+                sessionId: closeSessionInfo.sessionId,
+                success: true
+            });
+        }
+
+        return Promise.resolve({
+            sessionId: "",
+            success: false
+        });
     }
 
     registerOnSessionCreated(handler: (response: azdata.ObjectExplorerSession) => any): void {
@@ -57,7 +73,13 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     }
 
     expandNode(nodeInfo: azdata.ExpandNodeInfo): Thenable<boolean> {
-        return this.executeExpandNode(nodeInfo);
+        const router = new Router(() => {
+            return [];
+        });
+
+        router.getRoutingTarget(nodeInfo.nodePath!);
+
+        return Promise.resolve(true);
     }
 
     refreshNode(nodeInfo: azdata.ExpandNodeInfo): Thenable<boolean> {
@@ -72,68 +94,5 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
         this.onExpandCompleted.event((e) => {
             handler(e);
         });
-    }
-
-    private getDbName(connectionInfo: azdata.ConnectionInfo): string {
-        return connectionInfo.options["host"] ?? "postgres";
-    }
-
-    private getSessionId(connectionInfo: azdata.ConnectionInfo): string {
-        const db = connectionInfo.options["dbname"];
-        const user = connectionInfo.options["user"];
-        const port = connectionInfo.options["port"] ?? "5232";
-        const host = this.getDbName(connectionInfo);
-
-        return `objectexplorer://${user}@${host}:${port}:${db}/`
-    }
-
-    private executeExpandNode(nodeInfo: azdata.ExpandNodeInfo): Thenable<boolean> {
-        if (!nodeInfo.nodePath) {
-            throw new Error("nodeInfo.nodePath is undefined");
-        }
-
-        const dbInfo = this.getPostgresInfo(nodeInfo.nodePath);
-
-        if (dbInfo.database !== undefined) {
-            return this.expandDatabase(nodeInfo, dbInfo.host, dbInfo.database);
-        }
-
-        return this.expandHost(nodeInfo, dbInfo.host);
-    }
-
-    private expandHost(nodeInfo: azdata.ExpandNodeInfo, host: string): Thenable<boolean> {
-        return this.appContext.listDatabases(host)
-            .then((databases) => {
-                this.onExpandCompleted.fire(({
-                    sessionId: nodeInfo.sessionId,
-                    nodePath: nodeInfo.nodePath || "unknown",
-                    nodes: databases.map((db) => ({
-                        nodePath: `${nodeInfo.nodePath}/${db.name}`,
-                        nodeType: "Database",
-                        label: db.name,
-                        isLeaf: false
-                    }))
-                }));
-
-                return true;
-            });
-    }
-
-    private expandDatabase(nodeInfo: azdata.ExpandNodeInfo, host: string, database: string): Thenable<boolean> {
-        return Promise.resolve(true);
-    }
-
-    private getPostgresInfo(nodePath: string): { host: string, database?: string } {
-        const pathComponents = nodePath?.split("/");
-        const slashCount = pathComponents.length - 1;
-
-        switch (slashCount) {
-            case 0:
-                return { host: pathComponents[0] };
-            case 1:
-                return { host: pathComponents[0], database: pathComponents[1] };
-            default:
-                throw new Error(`Unrecognized path ${nodePath}`);
-        }
     }
 }

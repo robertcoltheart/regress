@@ -43,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
     const queryProvider = new QueryProvider();
 
     azdata.dataprotocol.registerConnectionProvider(connectionProvider);
-    azdata.dataprotocol.registerIconProvider(iconProvider);
+    //azdata.dataprotocol.registerIconProvider(iconProvider);
     azdata.dataprotocol.registerObjectExplorerProvider(objectExplorerProvider);
     azdata.dataprotocol.registerAdminServicesProvider(adminServicesProvider);
     azdata.dataprotocol.registerQueryProvider(queryProvider);

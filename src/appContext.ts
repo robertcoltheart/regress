@@ -1,27 +1,26 @@
 import * as azdata from "azdata";
 import * as vscode from "vscode";
 import { Client, ClientConfig, QueryResult } from "pg";
-import { DatabaseInfo } from "./models";
+import { Connection } from "./models/connection";
+import { DatabaseInfo } from "./models/database_info";
 
 export class AppContext {
     public static readonly CONNECTION_INFO_KEY = "host";
 
     private clients = new Map<string, Client>();
 
-    public async connect(ownerUri: string, connectionInfo: azdata.ConnectionInfo): Promise<Client | undefined> {
+    public async connect(ownerUri: string, connection: Connection): Promise<Client | undefined> {
         if (this.clients.has(ownerUri)) {
             return this.clients.get(ownerUri);
         }
 
-        const host = connectionInfo.options["host"];
-
         try {
             let client = new Client({
-                host: host,
-                database: connectionInfo.options["dbname"],
-                user: connectionInfo.options["user"],
-                password: connectionInfo.options["password"],
-                port: connectionInfo.options["port"] ?? "5432"
+                host: connection.host,
+                database: connection.database,
+                user: connection.username,
+                password: connection.password,
+                port: connection.port
             });
 
             await client.connect();

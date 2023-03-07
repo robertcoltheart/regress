@@ -2,18 +2,22 @@ import * as azdata from "azdata";
 import * as vscode from "vscode";
 import { v4 as uuid } from "uuid";
 import { AppContext } from "../appContext";
+import { Connection } from "../models/connection";
 
 export class ConnectionProvider implements azdata.ConnectionProvider {
     handle?: number | undefined;
     providerId: string = "regress";
 
     private onConnectionComplete: vscode.EventEmitter<azdata.ConnectionInfoSummary> = new vscode.EventEmitter();
+    private onConnectionChanged: vscode.EventEmitter<azdata.ChangedConnectionInfo> = new vscode.EventEmitter();
 
     constructor(private appContext: AppContext) {}
 
     async connect(connectionUri: string, connectionInfo: azdata.ConnectionInfo): Promise<boolean> {
+        const connection = new Connection(connectionInfo);
+
         try {
-            if (!(await this.appContext.connect(connectionUri, connectionInfo))) {
+            if (!(await this.appContext.connect(connectionUri, connection))) {
                 vscode.window.showErrorMessage("Failed to connect");
 
                 return false;
@@ -30,21 +34,18 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
         this.onConnectionComplete.fire({
             connectionId: uuid(),
             ownerUri: connectionUri,
-            messages: "",
-            errorMessage: "",
-            errorNumber: 0,
             connectionSummary: {
-                serverName: connectionInfo.options["host"],
-                userName: connectionInfo.options["username"],
-                databaseName: connectionInfo.options["dbname"]
+                serverName: connection.host,
+                userName: connection.username,
+                databaseName: connection.database
             },
             serverInfo: {
-                serverReleaseVersion: 1,
-                engineEditionId: 1,
-                serverVersion: "1.0",
+                serverReleaseVersion: 0,
+                engineEditionId: 0,
+                serverVersion: "",
                 serverLevel: "",
                 serverEdition: "",
-                isCloud: false,
+                isCloud: connection.host.endsWith("database.azure.com") || connection.host.endsWith("database.windows.net"),
                 azureVersion: 0,
                 osVersion: "",
                 options: {}
@@ -89,7 +90,7 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     registerOnConnectionComplete(handler: (connSummary: azdata.ConnectionInfoSummary) => any): void {
-        this.onConnectionComplete.event((e) => {
+        this.onConnectionComplete.event(e => {
           handler(e);
         });
     }
@@ -98,5 +99,8 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     registerOnConnectionChanged(handler: (changedConnInfo: azdata.ChangedConnectionInfo) => any): void {
+        this.onConnectionChanged.event((e) => {
+            handler(e);
+        });
     }
 }
