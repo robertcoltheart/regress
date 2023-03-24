@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 export class MetadataProvider implements azdata.MetadataProvider {
     handle?: number | undefined;
-    providerId: string = "regress";
+    providerId = "regress";
 
     getMetadata(connectionUri: string): Thenable<azdata.ProviderMetadata> {
         throw new Error("Method not implemented.");

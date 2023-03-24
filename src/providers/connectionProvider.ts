@@ -6,7 +6,7 @@ import { Connection } from "../models/connection";
 
 export class ConnectionProvider implements azdata.ConnectionProvider {
     handle?: number | undefined;
-    providerId: string = "regress";
+    providerId = "regress";
 
     private onConnectionComplete: vscode.EventEmitter<azdata.ConnectionInfoSummary> = new vscode.EventEmitter();
     private onConnectionChanged: vscode.EventEmitter<azdata.ChangedConnectionInfo> = new vscode.EventEmitter();
@@ -96,6 +96,7 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     registerOnIntelliSenseCacheComplete(handler: (connectionUri: string) => any): void {
+        // ignored
     }
 
     registerOnConnectionChanged(handler: (changedConnInfo: azdata.ChangedConnectionInfo) => any): void {

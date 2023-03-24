@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         // Display a message box to the user
         azdata.connection.getCurrentConnection().then(connection => {
-            let connectionId = connection ? connection.connectionId : 'No connection found!';
+            const connectionId = connection ? connection.connectionId : 'No connection found!';
             vscode.window.showInformationMessage(connectionId);
         }, error => {
              console.info(error);
@@ -50,4 +50,5 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+    // ignored
 }

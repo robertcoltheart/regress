@@ -15,7 +15,7 @@ export class AppContext {
         }
 
         try {
-            let client = new Client({
+            const client = new Client({
                 host: connection.host,
                 database: connection.database,
                 user: connection.username,

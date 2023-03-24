@@ -4,7 +4,7 @@ import { AppContext } from "../appContext";
 
 export class AdminServicesProvider implements azdata.AdminServicesProvider {
     handle?: number | undefined;
-    providerId: string = "regress";
+    providerId = "regress";
 
     constructor(private context: AppContext) {}
 

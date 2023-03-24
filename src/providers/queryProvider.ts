@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 export class QueryProvider implements azdata.QueryProvider {
     handle?: number | undefined;
-    providerId: string = "regress";
+    providerId = "regress";
 
     private onQueryComplete: vscode.EventEmitter<azdata.QueryExecuteCompleteNotificationResult> = new vscode.EventEmitter();
     private onBatchStart: vscode.EventEmitter<azdata.QueryExecuteBatchNotificationParams> = new vscode.EventEmitter();
@@ -133,5 +133,6 @@ export class QueryProvider implements azdata.QueryProvider {
     }
 
     registerOnEditSessionReady(handler: (ownerUri: string, success: boolean, message: string) => any): void {
+        // ignored
     }
 }

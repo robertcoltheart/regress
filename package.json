@@ -6,7 +6,7 @@
   "version": "0.0.1",
   "icon": "images/extension-icon.png",
   "repository": {
-    "url": "https://github.com/robertcoltheart"
+    "url": "https://github.com/robertcoltheart/regress"
   },
   "engines": {
     "vscode": "^1.39.0",
@@ -284,19 +284,22 @@
   },
   "devDependencies": {
     "@types/azdata": "*",
-    "@types/glob": "^7.1.4",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^13.11.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.15.5",
     "@types/pg": "^8.6.6",
     "@types/uuid": "^9.0.0",
     "@types/vscode": "^1.39.0",
-    "@typescript-eslint/eslint-plugin": "^2.30.0",
-    "@typescript-eslint/parser": "^2.30.0",
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "@typescript-eslint/parser": "^5.56.0",
     "azdata-test": "^1.x",
-    "eslint": "^6.8.0",
-    "glob": "^7.1.7",
-    "mocha": "^9.1.0",
-    "typescript": "^4.3.5"
+    "eslint": "^8.36.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "glob": "^9.3.2",
+    "mocha": "^10.2.0",
+    "prettier": "^2.8.6",
+    "typescript": "^5.0.2"
   },
   "dependencies": {
     "pg": "^8.8.0",
