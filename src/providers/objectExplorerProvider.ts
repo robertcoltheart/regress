@@ -34,23 +34,25 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
 
         this.sessions.set(sessionId, new ExplorerSession(client));
 
-        this.onSessionCreated.fire({
-            sessionId: sessionId,
-            success: true,
-            rootNode: {
-                nodePath: "/",
-                nodeType: "Database",
-                label: connection.database,
-                isLeaf: false,
-                metadata: {
-                    metadataType: azdata.MetadataType.Table,
-                    metadataTypeName: "Database",
-                    name: connection.getMaintenenceDb(),
-                    urn: connection.getUrnBase(),
-                    schema: ""
+        setTimeout(() => {
+            this.onSessionCreated.fire({
+                sessionId: sessionId,
+                success: true,
+                rootNode: {
+                    nodePath: "/",
+                    nodeType: "Database",
+                    label: connection.database,
+                    isLeaf: false,
+                    metadata: {
+                        metadataType: azdata.MetadataType.Table,
+                        metadataTypeName: "Database",
+                        name: connection.getMaintenenceDb(),
+                        urn: connection.getUrnBase(),
+                        schema: ""
+                    }
                 }
-            }
-        });
+            });
+        }, 500);
 
         return Promise.resolve({
             sessionId
@@ -112,11 +114,13 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
 
         const nodes = await this.getNodes(refresh, nodeInfo);
 
-        this.onExpandCompleted.fire({
-            sessionId: nodeInfo.sessionId,
-            nodePath: nodeInfo.nodePath || "unknown",
-            nodes: nodes
-        });
+        setTimeout(() => {
+            this.onExpandCompleted.fire({
+                sessionId: nodeInfo.sessionId,
+                nodePath: nodeInfo.nodePath || "unknown",
+                nodes: nodes
+            });
+        }, 500);
 
         return Promise.resolve(true);
     }

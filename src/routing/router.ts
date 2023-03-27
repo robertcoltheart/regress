@@ -44,22 +44,22 @@ export class Router {
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/views\/$/,
             target: new RoutingTarget(
-                this.getDefaultNodes,
+                (refresh, path, session, parameters) => session.getViews(refresh, path, parameters),
                 {label: "System", path: "system"})
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/views\/system\/$/,
-            target: new RoutingTarget(this.getDefaultNodes)
+            target: new RoutingTarget((refresh, path, session, parameters) => session.getViews(refresh, path, parameters))
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/materializedviews\/$/,
             target: new RoutingTarget(
-                this.getDefaultNodes,
+                (refresh, path, session, parameters) => session.getViews(refresh, path, parameters),
                 {label: "System", path: "system"})
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/materializedviews\/system\/$/,
-            target: new RoutingTarget(this.getDefaultNodes)
+            target: new RoutingTarget((refresh, path, session, parameters) => session.getViews(refresh, path, parameters))
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/functions\/$/,
@@ -133,11 +133,11 @@ export class Router {
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|views|materializedviews)\/(?<tid>\d+)\/columns\/$/,
-            target: new RoutingTarget(this.getDefaultNodes)
+            target: new RoutingTarget((refresh, path, session, parameters) => session.getColumns(refresh, path, parameters))
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|views|materializedviews)\/system\/(?<tid>\d+)\/columns\/$/,
-            target: new RoutingTarget(this.getDefaultNodes)
+            target: new RoutingTarget((refresh, path, session, parameters) => session.getColumns(refresh, path, parameters))
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/tables\/(?<tid>\d+)\/constraints\/$/,

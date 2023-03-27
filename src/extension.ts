@@ -3,11 +3,11 @@
 import * as vscode from 'vscode';
 import * as azdata from 'azdata';
 import { ConnectionProvider } from './providers/connectionProvider';
-import { IconProvider } from './providers/iconProvider';
 import { ObjectExplorerProvider } from './providers/objectExplorerProvider';
 import { AppContext } from './appContext';
 import { AdminServicesProvider } from './providers/adminServicesProvider';
 import { QueryProvider } from './providers/queryProvider';
+import { MetadataProvider } from './providers/metadataProvider';
 
 let appContext: AppContext;
 
@@ -37,16 +37,16 @@ export function activate(context: vscode.ExtensionContext) {
     appContext = new AppContext();
 
     const connectionProvider = new ConnectionProvider(appContext);
-    const iconProvider = new IconProvider();
     const objectExplorerProvider = new ObjectExplorerProvider(appContext);
     const adminServicesProvider = new AdminServicesProvider(appContext);
     const queryProvider = new QueryProvider();
+    const metadataProvider = new MetadataProvider();
 
     azdata.dataprotocol.registerConnectionProvider(connectionProvider);
-    //azdata.dataprotocol.registerIconProvider(iconProvider);
     azdata.dataprotocol.registerObjectExplorerProvider(objectExplorerProvider);
     azdata.dataprotocol.registerAdminServicesProvider(adminServicesProvider);
     azdata.dataprotocol.registerQueryProvider(queryProvider);
+    azdata.dataprotocol.registerMetadataProvider(metadataProvider);
 }
 
 export function deactivate() {

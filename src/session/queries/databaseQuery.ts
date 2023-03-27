@@ -31,7 +31,7 @@ ORDER BY datname;`);
                 isLeaf: false,
                 label: x.name,
                 nodeType: "Database",
-                nodePath: `${path}/${x.oid}/`
+                nodePath: this.join(path, x.oid, true)
             }));
     }
 }
