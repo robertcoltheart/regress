@@ -35,6 +35,30 @@ export class AppContext {
         }
     }
 
+    public async changeDatabase(ownerUri: string, database: string): Promise<boolean> {
+        const existing = this.getclient(ownerUri);
+
+        if (!existing) {
+            return false;
+        }
+
+        await this.disconnect(ownerUri);
+
+        const info = {
+            options: {
+                'dbname': database,
+                'user': existing.user,
+                'password': existing.password,
+                'port': existing.port,
+                'host': existing.host
+            }
+        }
+
+        const client = await this.connect(ownerUri, new Connection(info));
+
+        return client != undefined;
+    }
+
     public getclient(ownerUri: string): Client | undefined {
         return this.clients.get(ownerUri);
     }

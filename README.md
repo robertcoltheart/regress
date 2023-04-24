@@ -15,6 +15,3 @@ You can author your README using Visual Studio Code.  Here are some useful edito
 ```ps1
 docker run --rm -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres -c log_statement=all
 ```
-
-### TODO
-https://github.com/microsoft/TypeScript/issues/32098
