@@ -1,12 +1,13 @@
 import * as azdata from "azdata";
-import * as vscode from "vscode";
 
 export class CapabilitiesProvider implements azdata.CapabilitiesProvider {
     handle?: number | undefined;
     providerId = "regress";
 
-    getServerCapabilities(client: azdata.DataProtocolClientCapabilities): Promise<azdata.DataProtocolServerCapabilities> {
-        return Promise.resolve({
+    async getServerCapabilities(
+        client: azdata.DataProtocolClientCapabilities
+    ): Promise<azdata.DataProtocolServerCapabilities> {
+        return {
             protocolVersion: "1.0",
             providerName: "regress",
             providerDisplayName: "PostgreSQL (Regress)",
@@ -32,6 +33,6 @@ export class CapabilitiesProvider implements azdata.CapabilitiesProvider {
                 fileGroupInfoOptions: []
             },
             features: []
-        });
+        };
     }
 }

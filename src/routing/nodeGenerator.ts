@@ -1,4 +1,9 @@
-import { NodeInfo } from "azdata";
-import { ExplorerSession } from "../session/explorerSession";
+import { type NodeInfo } from "azdata";
+import { type ObjectExplorerSession } from "./objectExplorerSession";
 
-export type NodeGenerator = (refresh: boolean, path: string, session: ExplorerSession, parameters: RegExpMatchArray | null) => Promise<NodeInfo[]>;
+export type NodeGenerator = (
+    refresh: boolean,
+    path: string,
+    session: ObjectExplorerSession,
+    parameters: RegExpMatchArray | null
+) => Promise<NodeInfo[]>;

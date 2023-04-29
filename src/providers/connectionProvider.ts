@@ -1,31 +1,36 @@
-import * as azdata from "azdata";
+import type * as azdata from "azdata";
 import * as vscode from "vscode";
 import { v4 as uuid } from "uuid";
-import { AppContext } from "../appContext";
-import { Connection } from "../models/connection";
+import { type ConnectionService } from "../connection/connectionService";
+import { ConnectionDetails } from "../connection/connectionDetails";
+import { ConnectionType } from "../connection/connectionType";
 
 export class ConnectionProvider implements azdata.ConnectionProvider {
     handle?: number | undefined;
     providerId = "regress";
 
-    private onConnectionComplete: vscode.EventEmitter<azdata.ConnectionInfoSummary> = new vscode.EventEmitter();
-    private onConnectionChanged: vscode.EventEmitter<azdata.ChangedConnectionInfo> = new vscode.EventEmitter();
+    private readonly onConnectionComplete: vscode.EventEmitter<azdata.ConnectionInfoSummary> =
+        new vscode.EventEmitter();
 
-    constructor(private appContext: AppContext) {}
+    private readonly onConnectionChanged: vscode.EventEmitter<azdata.ChangedConnectionInfo> = new vscode.EventEmitter();
+
+    constructor(private readonly connectionService: ConnectionService) {}
 
     async connect(connectionUri: string, connectionInfo: azdata.ConnectionInfo): Promise<boolean> {
-        const connection = new Connection(connectionInfo);
+        const details = ConnectionDetails.create(connectionInfo);
 
         try {
-            if (!(await this.appContext.connect(connectionUri, connection))) {
-                vscode.window.showErrorMessage("Failed to connect");
+            const client = await this.connectionService.connect(connectionUri, ConnectionType.Default, details);
+
+            if (client === undefined) {
+                await vscode.window.showErrorMessage("Failed to connect");
 
                 return false;
             }
         } catch (e) {
             this.onConnectionComplete.fire({
                 ownerUri: connectionUri,
-                errorMessage: (e as { message: string}).message
+                errorMessage: (e as { message: string }).message
             });
 
             return false;
@@ -35,9 +40,9 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
             connectionId: uuid(),
             ownerUri: connectionUri,
             connectionSummary: {
-                serverName: connection.host,
-                userName: connection.username,
-                databaseName: connection.database
+                serverName: details.host,
+                userName: details.username,
+                databaseName: details.database
             },
             serverInfo: {
                 serverReleaseVersion: 0,
@@ -45,18 +50,18 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
                 serverVersion: "",
                 serverLevel: "",
                 serverEdition: "",
-                isCloud: connection.host.endsWith("database.azure.com") || connection.host.endsWith("database.windows.net"),
+                isCloud: details.host.endsWith("database.azure.com") || details.host.endsWith("database.windows.net"),
                 azureVersion: 0,
                 osVersion: "",
                 options: {}
             }
         });
 
-        return Promise.resolve(true);
+        return true;
     }
 
-    disconnect(connectionUri: string): Promise<boolean> {
-        return this.appContext.disconnect(connectionUri);
+    async disconnect(connectionUri: string): Promise<boolean> {
+        throw new Error("Method not implemented.");
     }
 
     cancelConnect(connectionUri: string): Thenable<boolean> {
@@ -64,17 +69,11 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     async listDatabases(connectionUri: string): Promise<azdata.ListDatabasesResult> {
-        const databases = await this.appContext.listDatabases(connectionUri);
-
-        return {
-            databaseNames: databases
-                .filter((db) => !db.isSystem)
-                .map((db) => db.name)
-        };
+        throw new Error("Method not implemented.");
     }
 
     async changeDatabase(connectionUri: string, newDatabase: string): Promise<boolean> {
-        return await this.appContext.changeDatabase(connectionUri, newDatabase);
+        throw new Error("Method not implemented.");
     }
 
     rebuildIntelliSenseCache(connectionUri: string): Thenable<void> {
@@ -90,8 +89,8 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     registerOnConnectionComplete(handler: (connSummary: azdata.ConnectionInfoSummary) => any): void {
-        this.onConnectionComplete.event(e => {
-          handler(e);
+        this.onConnectionComplete.event((e) => {
+            handler(e);
         });
     }
 

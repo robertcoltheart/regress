@@ -1,18 +1,18 @@
-import * as path from 'path';
-import Mocha from 'mocha';
-import { Glob } from 'glob'
+import * as path from "path";
+import Mocha from "mocha";
+import { Glob } from "glob";
 
 export function run(): Promise<void> {
-	// Create the mocha test
-	const mocha = new Mocha({
-		ui: 'tdd',
-		color: true
-	});
+    // Create the mocha test
+    const mocha = new Mocha({
+        ui: "tdd",
+        color: true
+    });
 
-	const testsRoot = path.resolve(__dirname, '..');
+    const testsRoot = path.resolve(__dirname, "..");
 
-	return new Promise((c, e) => {
-        const results = new Glob('**/**.test.js', { cwd: testsRoot });
+    return new Promise((c, e) => {
+        const results = new Glob("**/**.test.js", { cwd: testsRoot });
 
         for (const file of results) {
             mocha.addFile(path.resolve(testsRoot, file));
@@ -20,7 +20,7 @@ export function run(): Promise<void> {
 
         try {
             // Run the mocha test
-            mocha.run(failures => {
+            mocha.run((failures) => {
                 if (failures > 0) {
                     e(new Error(`${failures} tests failed.`));
                 } else {
@@ -31,5 +31,5 @@ export function run(): Promise<void> {
             console.error(err);
             e(err);
         }
-	});
+    });
 }

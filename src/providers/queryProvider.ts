@@ -1,24 +1,38 @@
-import * as azdata from "azdata";
+import type * as azdata from "azdata";
 import * as vscode from "vscode";
 
 export class QueryProvider implements azdata.QueryProvider {
     handle?: number | undefined;
     providerId = "regress";
 
-    private onQueryComplete: vscode.EventEmitter<azdata.QueryExecuteCompleteNotificationResult> = new vscode.EventEmitter();
-    private onBatchStart: vscode.EventEmitter<azdata.QueryExecuteBatchNotificationParams> = new vscode.EventEmitter();
-    private onBatchComplete: vscode.EventEmitter<azdata.QueryExecuteBatchNotificationParams> = new vscode.EventEmitter();
-    private onResultSetAvailable: vscode.EventEmitter<azdata.QueryExecuteResultSetNotificationParams> = new vscode.EventEmitter();
-    private onResultSetUpdated: vscode.EventEmitter<azdata.QueryExecuteResultSetNotificationParams> = new vscode.EventEmitter();
-    private onMessage: vscode.EventEmitter<azdata.QueryExecuteMessageParams> = new vscode.EventEmitter();
+    private readonly onQueryComplete: vscode.EventEmitter<azdata.QueryExecuteCompleteNotificationResult> =
+        new vscode.EventEmitter();
+
+    private readonly onBatchStart: vscode.EventEmitter<azdata.QueryExecuteBatchNotificationParams> =
+        new vscode.EventEmitter();
+
+    private readonly onBatchComplete: vscode.EventEmitter<azdata.QueryExecuteBatchNotificationParams> =
+        new vscode.EventEmitter();
+
+    private readonly onResultSetAvailable: vscode.EventEmitter<azdata.QueryExecuteResultSetNotificationParams> =
+        new vscode.EventEmitter();
+
+    private readonly onResultSetUpdated: vscode.EventEmitter<azdata.QueryExecuteResultSetNotificationParams> =
+        new vscode.EventEmitter();
+
+    private readonly onMessage: vscode.EventEmitter<azdata.QueryExecuteMessageParams> = new vscode.EventEmitter();
 
     cancelQuery(ownerUri: string): Thenable<azdata.QueryCancelResult> {
         throw new Error("Method not implemented.");
     }
 
-    async runQuery(ownerUri: string, selection: azdata.ISelectionData, runOptions?: azdata.ExecutionPlanOptions | undefined): Promise<void> {
-        const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(encodeURI(ownerUri)));
-        const content = document.getText();
+    async runQuery(
+        ownerUri: string,
+        selection: azdata.ISelectionData,
+        runOptions?: azdata.ExecutionPlanOptions | undefined
+    ): Promise<void> {
+        // const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(encodeURI(ownerUri)));
+        // const content = document.getText();
 
         this.onQueryComplete.fire({
             ownerUri: ownerUri,
@@ -78,7 +92,9 @@ export class QueryProvider implements azdata.QueryProvider {
         });
     }
 
-    registerOnResultSetAvailable(handler: (resultSetInfo: azdata.QueryExecuteResultSetNotificationParams) => any): void {
+    registerOnResultSetAvailable(
+        handler: (resultSetInfo: azdata.QueryExecuteResultSetNotificationParams) => any
+    ): void {
         this.onResultSetAvailable.event((e) => {
             handler(e);
         });
@@ -112,7 +128,14 @@ export class QueryProvider implements azdata.QueryProvider {
         throw new Error("Method not implemented.");
     }
 
-    initializeEdit(ownerUri: string, schemaName: string, objectName: string, objectType: string, rowLimit: number, queryString: string): Thenable<void> {
+    initializeEdit(
+        ownerUri: string,
+        schemaName: string,
+        objectName: string,
+        objectType: string,
+        rowLimit: number,
+        queryString: string
+    ): Thenable<void> {
         throw new Error("Method not implemented.");
     }
 
@@ -124,7 +147,12 @@ export class QueryProvider implements azdata.QueryProvider {
         throw new Error("Method not implemented.");
     }
 
-    updateCell(ownerUri: string, rowId: number, columnId: number, newValue: string): Thenable<azdata.EditUpdateCellResult> {
+    updateCell(
+        ownerUri: string,
+        rowId: number,
+        columnId: number,
+        newValue: string
+    ): Thenable<azdata.EditUpdateCellResult> {
         throw new Error("Method not implemented.");
     }
 

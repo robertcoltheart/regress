@@ -1,10 +1,8 @@
 import * as azdata from "azdata";
 import * as vscode from "vscode";
-import { AppContext } from "../appContext";
-import { Connection } from "../models/connection";
-import { Router } from "../routing/router";
-import { NodeInfo } from "azdata";
-import { ExplorerSession } from "../session/explorerSession";
+import { type ConnectionService } from "../connection/connectionService";
+import { ConnectionDetails } from "../connection/connectionDetails";
+import { ConnectionType } from "../connection/connectionType";
 
 export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     handle?: number | undefined;
@@ -14,55 +12,55 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     onSessionDisconnected: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter();
     onExpandCompleted: vscode.EventEmitter<azdata.ObjectExplorerExpandInfo> = new vscode.EventEmitter();
 
-    private router = new Router();
-
-    private sessions = new Map<string, ExplorerSession>();
-
-    constructor(private appContext: AppContext) {}
+    constructor(private readonly connections: ConnectionService) {}
 
     async createNewSession(connectionInfo: azdata.ConnectionInfo): Promise<azdata.ObjectExplorerSessionResponse> {
-        const connection = new Connection(connectionInfo);
-        const sessionId = connection.getSessionId();
+        const details = ConnectionDetails.create(connectionInfo);
+        const sessionId = details.getSessionId();
 
-        const client = await this.appContext.connect(sessionId, connection);
+        try {
+            await this.connections.connect(sessionId, ConnectionType.ObjectExplorer, details);
 
-        if (!client) {
-            vscode.window.showErrorMessage("Failed to connect");
-
-            throw new Error("Failed to connect");
-        }
-
-        this.sessions.set(sessionId, new ExplorerSession(client));
-
-        setTimeout(() => {
+            setTimeout(() => {
+                this.onSessionCreated.fire({
+                    sessionId,
+                    success: true,
+                    rootNode: {
+                        nodePath: "/",
+                        nodeType: "Database",
+                        label: details.database,
+                        isLeaf: false,
+                        metadata: {
+                            metadataType: azdata.MetadataType.Table,
+                            metadataTypeName: "Database",
+                            name: details.getMaintenenceDb(),
+                            urn: details.getUrnBase(),
+                            schema: ""
+                        }
+                    }
+                });
+            }, 500);
+        } catch (e) {
             this.onSessionCreated.fire({
-                sessionId: sessionId,
-                success: true,
+                sessionId,
+                success: false,
+                errorMessage: (e as { message: string }).message,
                 rootNode: {
                     nodePath: "/",
                     nodeType: "Database",
-                    label: connection.database,
-                    isLeaf: false,
-                    metadata: {
-                        metadataType: azdata.MetadataType.Table,
-                        metadataTypeName: "Database",
-                        name: connection.getMaintenenceDb(),
-                        urn: connection.getUrnBase(),
-                        schema: ""
-                    }
+                    label: details.database,
+                    isLeaf: false
                 }
             });
-        }, 500);
+        }
 
-        return Promise.resolve({
-            sessionId
-        });
+        return { sessionId };
     }
 
-    closeSession(closeSessionInfo: azdata.ObjectExplorerCloseSessionInfo): Thenable<azdata.ObjectExplorerCloseSessionResponse> {
-        if (closeSessionInfo.sessionId) {
-            this.sessions.delete(closeSessionInfo.sessionId);
-
+    closeSession(
+        closeSessionInfo: azdata.ObjectExplorerCloseSessionInfo
+    ): Thenable<azdata.ObjectExplorerCloseSessionResponse> {
+        if (closeSessionInfo.sessionId != null) {
             return Promise.resolve({
                 sessionId: closeSessionInfo.sessionId,
                 success: true
@@ -87,12 +85,12 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
         });
     }
 
-    expandNode(nodeInfo: azdata.ExpandNodeInfo): Promise<boolean> {
-        return this.expandOrRefreshNode(false, nodeInfo);
+    async expandNode(nodeInfo: azdata.ExpandNodeInfo): Promise<boolean> {
+        return await this.expandOrRefreshNode(false, nodeInfo);
     }
 
-    refreshNode(nodeInfo: azdata.ExpandNodeInfo): Promise<boolean> {
-        return this.expandOrRefreshNode(true, nodeInfo);
+    async refreshNode(nodeInfo: azdata.ExpandNodeInfo): Promise<boolean> {
+        return await this.expandOrRefreshNode(true, nodeInfo);
     }
 
     findNodes(findNodesInfo: azdata.FindNodesInfo): Thenable<azdata.ObjectExplorerFindNodesResponse> {
@@ -106,59 +104,6 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     }
 
     private async expandOrRefreshNode(refresh: boolean, nodeInfo: azdata.ExpandNodeInfo): Promise<boolean> {
-        const session = this.sessions.get(nodeInfo.sessionId);
-
-        if (!session) {
-            return Promise.resolve(false);
-        }
-
-        const nodes = await this.getNodes(refresh, nodeInfo);
-
-        setTimeout(() => {
-            this.onExpandCompleted.fire({
-                sessionId: nodeInfo.sessionId,
-                nodePath: nodeInfo.nodePath || "unknown",
-                nodes: nodes
-            });
-        }, 500);
-
-        return Promise.resolve(true);
-    }
-
-    private async getNodes(refresh: boolean, nodeInfo: azdata.ExpandNodeInfo): Promise<NodeInfo[]> {
-        const session = this.sessions.get(nodeInfo.sessionId);
-
-        if (!session || !nodeInfo.nodePath) {
-            return [];
-        }
-
-        if (refresh) {
-            session.cache.delete(nodeInfo.nodePath);
-        }
-
-        const cachedNodes = session.cache.get(nodeInfo.nodePath);
-
-        if (cachedNodes) {
-            return cachedNodes;
-        }
-
-        for (const item of this.router.routes) {
-            const isMatch = item.pattern.test(nodeInfo.nodePath);
-
-            if (isMatch) {
-                const matches = nodeInfo.nodePath.match(item.pattern);
-                const nodes = await item.target.getNodes(refresh, nodeInfo.nodePath, session, matches);
-
-                session.cache.set(nodeInfo.nodePath, nodes);
-
-                return nodes;
-            }
-        }
-
-        if (!nodeInfo.nodePath.endsWith("/")) {
-            return [];
-        }
-
-        throw new Error(`No matching route for ${nodeInfo.nodePath}`);
+        return true;
     }
 }
