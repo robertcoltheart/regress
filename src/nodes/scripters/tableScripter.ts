@@ -1,6 +1,6 @@
 import { type NodeObject } from "../nodeObject";
+import { Table } from "../objects/table";
 import { type ScriptableNode } from "../scriptableNode";
-import { Table } from "./table";
 
 export class TableScripter implements ScriptableNode<Table> {
     public async getNodes(parent: NodeObject): Promise<Table[]> {
@@ -23,3 +23,4 @@ ORDER BY nsp.nspname, rel.relname;`);
         );
     }
 }
+

@@ -1,5 +1,8 @@
 import type * as azdata from "azdata";
 import * as vscode from "vscode";
+import { ConnectionService } from "../connection/connectionService";
+import { ConnectionType } from "../connection/connectionType";
+import { Server } from "../nodes/objects/server";
 
 export class ScriptingProvider implements azdata.ScriptingProvider {
     handle?: number | undefined;
@@ -8,12 +11,17 @@ export class ScriptingProvider implements azdata.ScriptingProvider {
     private readonly onScriptingComplete: vscode.EventEmitter<azdata.ScriptingCompleteResult> =
         new vscode.EventEmitter();
 
+    constructor(private readonly connections: ConnectionService) {}
+
     scriptAsOperation(
         connectionUri: string,
         operation: azdata.ScriptOperation,
         metadata: azdata.ObjectMetadata,
         paramDetails: azdata.ScriptingParamDetails
     ): Thenable<azdata.ScriptingResult> {
+        const client = this.connections.getConnection(connectionUri, ConnectionType.Query);
+        const server = new Server(client?.database!, client?.database!, null!, client!);
+
         throw new Error("Method not implemented.");
     }
 
@@ -23,3 +31,4 @@ export class ScriptingProvider implements azdata.ScriptingProvider {
         });
     }
 }
+

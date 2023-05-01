@@ -1,5 +1,5 @@
 import { NodeObject } from "../nodeObject";
-import { TriggerScripter } from "./triggerScripter";
+import { TriggerScripter } from "../scripters/triggerScripter";
 
 export class Trigger extends NodeObject {
     public static readonly scripter = new TriggerScripter();
@@ -8,3 +8,4 @@ export class Trigger extends NodeObject {
         super(parent);
     }
 }
+

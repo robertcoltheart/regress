@@ -1,5 +1,5 @@
 import { NodeObject } from "../nodeObject";
-import { CheckConstraintScripter } from "./checkConstraintScripter";
+import { CheckConstraintScripter } from "../scripters/checkConstraintScripter";
 
 export class CheckConstraint extends NodeObject {
     public static readonly scripter = new CheckConstraintScripter();
@@ -8,3 +8,4 @@ export class CheckConstraint extends NodeObject {
         super(parent);
     }
 }
+

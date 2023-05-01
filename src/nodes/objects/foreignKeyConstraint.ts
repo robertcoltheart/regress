@@ -1,5 +1,5 @@
 import { NodeObject } from "../nodeObject";
-import { ForeignKeyConstraintScripter } from "./foreignKeyConstraintScripter";
+import { ForeignKeyConstraintScripter } from "../scripters/foreignKeyConstraintScripter";
 
 export class ForeignKeyConstraint extends NodeObject {
     public static readonly scripter = new ForeignKeyConstraintScripter();
@@ -8,3 +8,4 @@ export class ForeignKeyConstraint extends NodeObject {
         super(parent);
     }
 }
+

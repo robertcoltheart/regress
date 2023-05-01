@@ -1,12 +1,12 @@
 import { Index } from ".";
 import { NodeObject } from "../nodeObject";
+import { TableScripter } from "../scripters/tableScripter";
 import { CheckConstraint } from "./checkConstraint";
 import { Column } from "./column";
 import { ExclusionConstraint } from "./exclusionConstraint";
 import { ForeignKeyConstraint } from "./foreignKeyConstraint";
 import { IndexConstraint } from "./indexConstraint";
 import { Rule } from "./rule";
-import { TableScripter } from "./tableScripter";
 import { Trigger } from "./trigger";
 
 export class Table extends NodeObject {
@@ -39,3 +39,4 @@ export class Table extends NodeObject {
         super(parent);
     }
 }
+

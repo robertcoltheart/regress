@@ -1,6 +1,6 @@
 import { type NodeObject } from "../nodeObject";
+import { Collation } from "../objects/collation";
 import { type ScriptableNode } from "../scriptableNode";
-import { Collation } from "./collation";
 
 export class CollationScripter implements ScriptableNode<Collation> {
     public async getNodes(parent: NodeObject): Promise<Collation[]> {
@@ -22,3 +22,4 @@ ORDER BY c.collname;`);
         return result.rows.map((x) => new Collation(parent, x.oid.toString(), x.name, x.schema, x.is_system));
     }
 }
+

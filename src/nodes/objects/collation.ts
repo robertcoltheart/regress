@@ -1,6 +1,9 @@
 import { NodeObject } from "../nodeObject";
+import { CollationScripter } from "../scripters/collationScripter";
 
 export class Collation extends NodeObject {
+    public static readonly scripter = new CollationScripter();
+
     constructor(
         parent: NodeObject,
         public id: string,
@@ -11,3 +14,4 @@ export class Collation extends NodeObject {
         super(parent);
     }
 }
+

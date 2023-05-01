@@ -1,5 +1,5 @@
 import { NodeObject } from "../nodeObject";
-import { ColumnScripter } from "./columnScripter";
+import { ColumnScripter } from "../scripters/columnScripter";
 
 export class Column extends NodeObject {
     public static readonly scripter = new ColumnScripter();
@@ -8,3 +8,4 @@ export class Column extends NodeObject {
         super(parent);
     }
 }
+

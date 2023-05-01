@@ -1,6 +1,6 @@
 import { type NodeObject } from "../nodeObject";
+import { Column } from "../objects/column";
 import { type ScriptableNode } from "../scriptableNode";
-import { Column } from "./column";
 
 export class ColumnScripter implements ScriptableNode<Column> {
     public async getNodes(parent: NodeObject): Promise<Column[]> {
@@ -33,3 +33,4 @@ ORDER BY attnum`);
         return result.rows.map((x) => new Column(parent, x.oid.toString(), x.name, x.data_type));
     }
 }
+

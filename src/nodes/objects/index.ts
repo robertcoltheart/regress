@@ -1,5 +1,5 @@
 import { NodeObject } from "../nodeObject";
-import { IndexScripter } from "./indexScripter";
+import { IndexScripter } from "../scripters/indexScripter";
 
 export class Index extends NodeObject {
     public static readonly scripter = new IndexScripter();
@@ -8,3 +8,4 @@ export class Index extends NodeObject {
         super(parent);
     }
 }
+

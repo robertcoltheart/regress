@@ -1,5 +1,5 @@
 import { NodeObject } from "../nodeObject";
-import { ExclusionConstraintScripter } from "./exclusionConstraintScripter";
+import { ExclusionConstraintScripter } from "../scripters/exclusionConstraintScripter";
 
 export class ExclusionConstraint extends NodeObject {
     public static readonly scripter = new ExclusionConstraintScripter();
@@ -8,3 +8,4 @@ export class ExclusionConstraint extends NodeObject {
         super(parent);
     }
 }
+

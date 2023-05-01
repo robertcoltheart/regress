@@ -2,13 +2,39 @@ import { type Client } from "pg";
 import { NodeCollection } from "../nodeCollection";
 import { NodeObject } from "../nodeObject";
 import { type ScriptableCreate } from "../scriptableCreate";
-import { DatabaseScripter } from "./databaseScripter";
 import { Table } from "./table";
+import { DatabaseScripter } from "../scripters/databaseScripter";
+import { Schema } from "./schema";
+import { View } from "./view";
+import { Collation } from "./collation";
+import { DataType } from "./dataType";
+import { Function } from "./function";
+import { Sequence } from "./sequence";
+import { Extension } from "./extension";
+import { MaterializedView } from "./materializedView";
 
-export class Database extends NodeObject implements ScriptableCreate {
+export class Database extends NodeObject implements ScriptableCreate<Database> {
     public static readonly scripter = new DatabaseScripter();
 
-    public readonly tables = new NodeCollection<Table>(this, Table.scripter);
+    public readonly tables = this.addCollection(Table.scripter);
+
+    public readonly schemas = this.addCollection(Schema.scripter);
+
+    public readonly views = this.addCollection(View.scripter);
+
+    public readonly collations = this.addCollection(Collation.scripter);
+
+    public readonly dataTypes = this.addCollection(DataType.scripter);
+
+    public readonly functions = this.addCollection(Function.scripter);
+
+    public readonly sequences = this.addCollection(Sequence.scripter);
+
+    public readonly triggerFunctions = this.addCollection(Sequence.scripter);
+
+    public readonly extensions = this.addCollection(Extension.scripter);
+
+    public readonly materializedViews = this.addCollection(MaterializedView.scripter);
 
     private client?: Client;
 
@@ -46,3 +72,4 @@ export class Database extends NodeObject implements ScriptableCreate {
         return this.client;
     }
 }
+

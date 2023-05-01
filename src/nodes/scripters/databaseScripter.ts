@@ -1,6 +1,6 @@
 import { type NodeObject } from "../nodeObject";
+import { Database } from "../objects/database";
 import { type ScriptableNode } from "../scriptableNode";
-import { Database } from "./database";
 
 export class DatabaseScripter implements ScriptableNode<Database> {
     public async getNodes(parent: NodeObject): Promise<Database[]> {
@@ -26,3 +26,4 @@ ORDER BY datname;`);
         return result.rows.map<Database>((x) => new Database(parent, x.oid.toString(), x.name, x.is_system));
     }
 }
+

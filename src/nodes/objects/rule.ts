@@ -1,5 +1,5 @@
 import { NodeObject } from "../nodeObject";
-import { RuleScripter } from "./ruleScripter";
+import { RuleScripter } from "../scripters/ruleScripter";
 
 export class Rule extends NodeObject {
     public static readonly scripter = new RuleScripter();
@@ -8,3 +8,4 @@ export class Rule extends NodeObject {
         super(parent);
     }
 }
+
