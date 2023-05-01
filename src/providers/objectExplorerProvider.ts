@@ -6,6 +6,7 @@ import { ConnectionType } from "../connection/connectionType";
 import { ObjectExplorerSession } from "../routing/objectExplorerSession";
 import { Server } from "../nodes/objects/server";
 import { Router } from "../routing/router";
+import { type Client } from "pg";
 
 export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     handle?: number | undefined;
@@ -26,11 +27,15 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
         const sessionId = details.getSessionId();
 
         try {
-            await this.connections.connect(sessionId, ConnectionType.ObjectExplorer, details);
+            const client = await this.connections.connect(sessionId, ConnectionType.ObjectExplorer, details);
+            const server = new Server(
+                details.host,
+                details.host,
+                async (name) => await this.createConnection(sessionId, name),
+                client
+            );
 
-            const server = new Server(details.host, details.host);
-
-            this.sessions.set(sessionId, new ObjectExplorerSession(server));
+            this.sessions.set(sessionId, new ObjectExplorerSession(sessionId, server, details));
 
             setTimeout(() => {
                 this.onSessionCreated.fire({
@@ -112,6 +117,19 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
         this.onExpandCompleted.event((e) => {
             handler(e);
         });
+    }
+
+    private async createConnection(sessionId: string, database: string): Promise<Client> {
+        const session = this.sessions.get(sessionId);
+
+        if (session == null) {
+            throw Error("Cannot find session");
+        }
+
+        const details = ConnectionDetails.clone(session.details, database);
+        const key = session.id + database;
+
+        return await this.connections.connect(key, ConnectionType.ObjectExplorer, details);
     }
 
     private async expandOrRefreshNode(refresh: boolean, nodeInfo: azdata.ExpandNodeInfo): Promise<boolean> {

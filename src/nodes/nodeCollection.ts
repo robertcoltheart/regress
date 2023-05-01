@@ -7,16 +7,14 @@ export class NodeCollection<T extends NodeObject> implements Resettable {
 
     constructor(private readonly parent: NodeObject, private readonly scripter: ScriptableNode<T>) {}
 
-    public getAll(): T[] {
-        if (this.items == null) {
-            this.items = Array.from(this.scripter.getNodes(this.parent));
-        }
-
-        return this.items;
+    public async getAll(): Promise<T[]> {
+        return await this.load();
     }
 
-    public get(id: string): T {
-        const item = this.items?.find((x) => x.id === id);
+    public async get(id: string): Promise<T> {
+        const nodes = await this.load();
+
+        const item = nodes.find((x) => x.id === id);
 
         if (item == null) {
             throw Error("An item with the provided index does not exist");
@@ -27,5 +25,13 @@ export class NodeCollection<T extends NodeObject> implements Resettable {
 
     public reset(): void {
         this.items = undefined;
+    }
+
+    private async load(): Promise<T[]> {
+        if (this.items == null) {
+            this.items = await this.scripter.getNodes(this.parent);
+        }
+
+        return this.items;
     }
 }

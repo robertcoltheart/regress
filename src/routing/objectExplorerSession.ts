@@ -1,18 +1,20 @@
 import type * as azdata from "azdata";
 import { type Server } from "../nodes/objects/server";
 import { type NodeObject } from "../nodes/nodeObject";
+import { type ConnectionDetails } from "../connection/connectionDetails";
 
 export class ObjectExplorerSession {
     public cache = new Map<string, azdata.NodeInfo[]>();
 
-    constructor(public server: Server) {}
+    constructor(public id: string, public server: Server, public details: ConnectionDetails) {}
 
-    public async getDatabases(
-        refresh: boolean,
-        path: string,
-        parameters: RegExpMatchArray | null
-    ): Promise<azdata.NodeInfo[]> {
-        return this.server.databases.getAll().map((x) => this.getNodeInfo(x, path, "Database"));
+    public async getDatabases(refresh: boolean, path: string): Promise<azdata.NodeInfo[]> {
+        this.refresh(refresh);
+
+        const isSystem = path.includes("systemdatabase");
+        const nodes = await this.server.databases.getAll();
+
+        return nodes.filter((x) => x.isSystem === isSystem).map((x) => this.getNodeInfo(x, path, "Database"));
     }
 
     public async getTables(
@@ -20,14 +22,19 @@ export class ObjectExplorerSession {
         path: string,
         parameters: RegExpMatchArray | null
     ): Promise<azdata.NodeInfo[]> {
+        this.refresh(refresh);
+
         if (parameters?.groups == null) {
             throw new Error(`Invalid path: ${path}`);
         }
 
-        const databaseId = parameters.groups.dbid;
-        const database = this.server.databases.get(databaseId);
+        const isSystem = this.isSystem(path);
+        const database = await this.server.databases.get(parameters.groups.dbid);
+        const nodes = await database.tables.getAll();
 
-        return database.tables.getAll().map((x) => this.getNodeInfo(x, path, "Table", `${x.schema}.${x.name}`));
+        return nodes
+            .filter((x) => x.isSystem === isSystem)
+            .map((x) => this.getNodeInfo(x, path, "Table", `${x.schema}.${x.name}`));
     }
 
     public async getViews(
@@ -75,7 +82,17 @@ export class ObjectExplorerSession {
         path: string,
         parameters: RegExpMatchArray | null
     ): Promise<azdata.NodeInfo[]> {
-        return [];
+        this.refresh(refresh);
+
+        if (parameters?.groups == null) {
+            throw new Error(`Invalid path: ${path}`);
+        }
+
+        const database = await this.server.databases.get(parameters.groups.dbid);
+        const table = await database.tables.get(parameters.groups.tid);
+        const nodes = await table.columns.getAll();
+
+        return nodes.map((x) => this.getNodeInfo(x, path, "Column", `${x.name} (${x.dataType})`, true));
     }
 
     public async getConstraints(
@@ -154,5 +171,15 @@ export class ObjectExplorerSession {
             label: label ?? node.name,
             isLeaf
         };
+    }
+
+    private refresh(refresh: boolean): void {
+        if (refresh) {
+            this.server.refresh();
+        }
+    }
+
+    private isSystem(path: string): boolean {
+        return path.includes("/system/");
     }
 }

@@ -30,9 +30,7 @@ export class Router {
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/$/,
-            target: new RoutingTarget(
-                async (refresh, path, session, parameters) => await session.getDatabases(refresh, path, parameters)
-            )
+            target: new RoutingTarget(async (refresh, path, session) => await session.getDatabases(refresh, path))
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/tables\/$/,

@@ -61,7 +61,7 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     async disconnect(connectionUri: string): Promise<boolean> {
-        throw new Error("Method not implemented.");
+        return await this.connectionService.disconnect(connectionUri, ConnectionType.Default);
     }
 
     cancelConnect(connectionUri: string): Thenable<boolean> {

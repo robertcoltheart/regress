@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext): void {
     azdata.dataprotocol.registerAdminServicesProvider(new AdminServicesProvider(connection));
     azdata.dataprotocol.registerCapabilitiesServiceProvider(new CapabilitiesProvider());
     azdata.dataprotocol.registerConnectionProvider(new ConnectionProvider(connection));
-    azdata.dataprotocol.registerMetadataProvider(new MetadataProvider());
+    azdata.dataprotocol.registerMetadataProvider(new MetadataProvider(connection));
     azdata.dataprotocol.registerObjectExplorerProvider(new ObjectExplorerProvider(connection));
     azdata.dataprotocol.registerQueryProvider(new QueryProvider());
     azdata.dataprotocol.registerScriptingProvider(new ScriptingProvider());
