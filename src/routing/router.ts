@@ -1,5 +1,4 @@
 import { type NodeInfo } from "azdata";
-import { type ObjectExplorerSession } from "./objectExplorerSession";
 import { RoutingTarget } from "./routingTarget";
 
 export class Router {
@@ -31,112 +30,112 @@ export class Router {
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getDatabases(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getDatabases(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/tables\/$/,
             target: new RoutingTarget(
-                (refresh, path, session, parameters) => session.getTables(refresh, path, parameters),
+                async (refresh, path, session, parameters) => await session.getTables(refresh, path, parameters),
                 { label: "System", path: "system" }
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/tables\/system\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getTables(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getTables(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/views\/$/,
             target: new RoutingTarget(
-                (refresh, path, session, parameters) => session.getViews(refresh, path, parameters),
+                async (refresh, path, session, parameters) => await session.getViews(refresh, path, parameters),
                 { label: "System", path: "system" }
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/views\/system\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getViews(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getViews(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/materializedviews\/$/,
             target: new RoutingTarget(
-                (refresh, path, session, parameters) => session.getViews(refresh, path, parameters),
+                async (refresh, path, session, parameters) => await session.getViews(refresh, path, parameters),
                 { label: "System", path: "system" }
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/materializedviews\/system\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getViews(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getViews(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/functions\/$/,
             target: new RoutingTarget(
-                (refresh, path, session, parameters) => session.getFunctions(refresh, path, parameters),
+                async (refresh, path, session, parameters) => await session.getFunctions(refresh, path, parameters),
                 { label: "System", path: "system" }
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/functions\/system\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getFunctions(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getFunctions(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/collations\/$/,
             target: new RoutingTarget(
-                (refresh, path, session, parameters) => session.getCollations(refresh, path, parameters),
+                async (refresh, path, session, parameters) => await session.getCollations(refresh, path, parameters),
                 { label: "System", path: "system" }
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/collations\/system\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getCollations(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getCollations(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/datatypes\/$/,
             target: new RoutingTarget(
-                (refresh, path, session, parameters) => session.getDataTypes(refresh, path, parameters),
+                async (refresh, path, session, parameters) => await session.getDataTypes(refresh, path, parameters),
                 { label: "System", path: "system" }
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/datatypes\/system\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getDataTypes(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getDataTypes(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/sequences\/$/,
             target: new RoutingTarget(
-                (refresh, path, session, parameters) => session.getSequences(refresh, path, parameters),
+                async (refresh, path, session, parameters) => await session.getSequences(refresh, path, parameters),
                 { label: "System", path: "system" }
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/sequences\/system\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getSequences(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getSequences(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/schemas\/$/,
             target: new RoutingTarget(
-                (refresh, path, session, parameters) => session.getSequences(refresh, path, parameters),
+                async (refresh, path, session, parameters) => await session.getSequences(refresh, path, parameters),
                 { label: "System", path: "system" }
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/schemas\/system\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getSequences(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getSequences(refresh, path, parameters)
             )
         },
         {
@@ -164,68 +163,68 @@ export class Router {
         {
             pattern:
                 /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|views|materializedviews)\/(?<tid>\d+)\/columns\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getColumns(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getColumns(refresh, path, parameters)
             )
         },
         {
             pattern:
                 /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|views|materializedviews)\/system\/(?<tid>\d+)\/columns\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getColumns(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getColumns(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/tables\/(?<tid>\d+)\/constraints\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getConstraints(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getConstraints(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/tables\/system\/(?<tid>\d+)\/constraints\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getConstraints(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getConstraints(refresh, path, parameters)
             )
         },
         {
             pattern:
                 /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|materializedviews)\/(?<tid>\d+)\/indexes\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getIndexes(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getIndexes(refresh, path, parameters)
             )
         },
         {
             pattern:
                 /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|materializedviews)\/system\/(?<tid>\d+)\/indexes\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getIndexes(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getIndexes(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|views)\/(?<tid>\d+)\/rules\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getRules(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getRules(refresh, path, parameters)
             )
         },
         {
             pattern:
                 /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|views)\/system\/(?<tid>\d+)\/rules\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getRules(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getRules(refresh, path, parameters)
             )
         },
         {
             pattern:
                 /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|views)\/(?<tid>\d+)\/triggers\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getTriggers(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getTriggers(refresh, path, parameters)
             )
         },
         {
             pattern:
                 /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/(?<obj>tables|views)\/system\/(?<tid>\d+)\/triggers\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getTriggers(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getTriggers(refresh, path, parameters)
             )
         },
         {
@@ -264,61 +263,56 @@ export class Router {
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/functions(\/system)\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getFunctions(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getFunctions(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/collations(\/system)\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getCollations(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getCollations(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/datatypes(\/system)\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getDataTypes(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getDataTypes(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/sequences(\/system)\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getSequences(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getSequences(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/extensions\/$/,
             target: new RoutingTarget(
-                (refresh, path, session, parameters) => session.getExtensions(refresh, path, parameters),
+                async (refresh, path, session, parameters) => await session.getExtensions(refresh, path, parameters),
                 { label: "System", path: "system" }
             )
         },
         {
             pattern: /^\/(?<db>databases|systemdatabases)\/(?<dbid>\d+)\/extensions\/system\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getExtensions(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getExtensions(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/roles\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getRoles(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getRoles(refresh, path, parameters)
             )
         },
         {
             pattern: /^\/tablespaces\/$/,
-            target: new RoutingTarget((refresh, path, session, parameters) =>
-                session.getTablespaces(refresh, path, parameters)
+            target: new RoutingTarget(
+                async (refresh, path, session, parameters) => await session.getTablespaces(refresh, path, parameters)
             )
         }
     ];
 
-    private async getDefaultNodes(
-        refresh: boolean,
-        path: string,
-        session: ObjectExplorerSession,
-        parameters: RegExpMatchArray | null
-    ): Promise<NodeInfo[]> {
+    private async getDefaultNodes(): Promise<NodeInfo[]> {
         return [];
     }
 }

@@ -3,14 +3,21 @@ import * as vscode from "vscode";
 import { type ConnectionService } from "../connection/connectionService";
 import { ConnectionDetails } from "../connection/connectionDetails";
 import { ConnectionType } from "../connection/connectionType";
+import { ObjectExplorerSession } from "../routing/objectExplorerSession";
+import { Server } from "../nodes/objects/server";
+import { Router } from "../routing/router";
 
 export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     handle?: number | undefined;
     providerId = "regress";
 
+    router = new Router();
+
     onSessionCreated: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter();
     onSessionDisconnected: vscode.EventEmitter<azdata.ObjectExplorerSession> = new vscode.EventEmitter();
     onExpandCompleted: vscode.EventEmitter<azdata.ObjectExplorerExpandInfo> = new vscode.EventEmitter();
+
+    sessions = new Map<string, ObjectExplorerSession>();
 
     constructor(private readonly connections: ConnectionService) {}
 
@@ -20,6 +27,10 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
 
         try {
             await this.connections.connect(sessionId, ConnectionType.ObjectExplorer, details);
+
+            const server = new Server(details.host, details.host);
+
+            this.sessions.set(sessionId, new ObjectExplorerSession(server));
 
             setTimeout(() => {
                 this.onSessionCreated.fire({
@@ -104,6 +115,59 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
     }
 
     private async expandOrRefreshNode(refresh: boolean, nodeInfo: azdata.ExpandNodeInfo): Promise<boolean> {
+        const session = this.sessions.get(nodeInfo.sessionId);
+
+        if (session == null) {
+            return false;
+        }
+
+        const nodes = await this.getNodes(refresh, nodeInfo);
+
+        setTimeout(() => {
+            this.onExpandCompleted.fire({
+                sessionId: nodeInfo.sessionId,
+                nodePath: nodeInfo.nodePath ?? "unknown",
+                nodes
+            });
+        }, 500);
+
         return true;
+    }
+
+    private async getNodes(refresh: boolean, nodeInfo: azdata.ExpandNodeInfo): Promise<azdata.NodeInfo[]> {
+        const session = this.sessions.get(nodeInfo.sessionId);
+
+        if (session == null || nodeInfo.nodePath == null) {
+            throw new Error(`Session not found ${nodeInfo.sessionId}`);
+        }
+
+        if (refresh) {
+            session.cache.delete(nodeInfo.nodePath);
+        }
+
+        const cachedNodes = session.cache.get(nodeInfo.nodePath);
+
+        if (cachedNodes !== undefined) {
+            return cachedNodes;
+        }
+
+        for (const item of this.router.routes) {
+            const isMatch = item.pattern.test(nodeInfo.nodePath);
+
+            if (isMatch) {
+                const matches = nodeInfo.nodePath.match(item.pattern);
+                const nodes = await item.target.getNodes(refresh, nodeInfo.nodePath, session, matches);
+
+                session.cache.set(nodeInfo.nodePath, nodes);
+
+                return nodes;
+            }
+        }
+
+        if (!nodeInfo.nodePath.endsWith("/")) {
+            return [];
+        }
+
+        throw new Error(`No matching route for ${nodeInfo.nodePath}`);
     }
 }

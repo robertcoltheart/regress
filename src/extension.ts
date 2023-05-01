@@ -14,7 +14,7 @@ import { ConnectionService } from "./connection/connectionService";
 export function activate(context: vscode.ExtensionContext): void {
     const connection = new ConnectionService();
 
-    azdata.dataprotocol.registerAdminServicesProvider(new AdminServicesProvider());
+    azdata.dataprotocol.registerAdminServicesProvider(new AdminServicesProvider(connection));
     azdata.dataprotocol.registerCapabilitiesServiceProvider(new CapabilitiesProvider());
     azdata.dataprotocol.registerConnectionProvider(new ConnectionProvider(connection));
     azdata.dataprotocol.registerMetadataProvider(new MetadataProvider());
