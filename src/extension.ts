@@ -20,7 +20,7 @@ export function activate(context: vscode.ExtensionContext): void {
     azdata.dataprotocol.registerMetadataProvider(new MetadataProvider(connection));
     azdata.dataprotocol.registerObjectExplorerProvider(new ObjectExplorerProvider(connection));
     azdata.dataprotocol.registerQueryProvider(new QueryProvider());
-    azdata.dataprotocol.registerScriptingProvider(new ScriptingProvider());
+    azdata.dataprotocol.registerScriptingProvider(new ScriptingProvider(connection));
 }
 
 export function deactivate(): void {
