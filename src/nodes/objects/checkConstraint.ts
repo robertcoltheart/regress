@@ -8,4 +8,3 @@ export class CheckConstraint extends NodeObject {
         super(parent);
     }
 }
-

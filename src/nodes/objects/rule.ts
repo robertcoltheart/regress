@@ -8,4 +8,3 @@ export class Rule extends NodeObject {
         super(parent);
     }
 }
-

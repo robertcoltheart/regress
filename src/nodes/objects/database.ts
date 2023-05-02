@@ -1,5 +1,4 @@
 import { type Client } from "pg";
-import { NodeCollection } from "../nodeCollection";
 import { NodeObject } from "../nodeObject";
 import { type ScriptableCreate } from "../scriptableCreate";
 import { Table } from "./table";
@@ -72,4 +71,3 @@ export class Database extends NodeObject implements ScriptableCreate<Database> {
         return this.client;
     }
 }
-

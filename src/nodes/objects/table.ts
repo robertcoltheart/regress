@@ -39,4 +39,3 @@ export class Table extends NodeObject {
         super(parent);
     }
 }
-

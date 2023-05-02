@@ -26,4 +26,3 @@ ORDER BY datname;`);
         return result.rows.map<Database>((x) => new Database(parent, x.oid.toString(), x.name, x.is_system));
     }
 }
-

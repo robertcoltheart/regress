@@ -8,4 +8,3 @@ export class IndexConstraint extends NodeObject {
         super(parent);
     }
 }
-

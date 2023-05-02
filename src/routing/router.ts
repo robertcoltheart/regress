@@ -298,15 +298,11 @@ export class Router {
         },
         {
             pattern: /^\/roles\/$/,
-            target: new RoutingTarget(
-                async (refresh, path, session, parameters) => await session.getRoles(refresh, path, parameters)
-            )
+            target: new RoutingTarget(async (refresh, path, session) => await session.getRoles(refresh, path))
         },
         {
             pattern: /^\/tablespaces\/$/,
-            target: new RoutingTarget(
-                async (refresh, path, session, parameters) => await session.getTablespaces(refresh, path, parameters)
-            )
+            target: new RoutingTarget(async (refresh, path, session) => await session.getTablespaces(refresh, path))
         }
     ];
 

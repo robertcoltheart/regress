@@ -8,4 +8,3 @@ export class Index extends NodeObject {
         super(parent);
     }
 }
-

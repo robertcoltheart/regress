@@ -33,4 +33,3 @@ ORDER BY attnum`);
         return result.rows.map((x) => new Column(parent, x.oid.toString(), x.name, x.data_type));
     }
 }
-

@@ -23,4 +23,3 @@ ORDER BY nsp.nspname, rel.relname;`);
         );
     }
 }
-

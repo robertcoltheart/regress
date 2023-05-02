@@ -8,4 +8,3 @@ export class ExclusionConstraint extends NodeObject {
         super(parent);
     }
 }
-

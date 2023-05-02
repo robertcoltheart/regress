@@ -22,4 +22,3 @@ ORDER BY c.collname;`);
         return result.rows.map((x) => new Collation(parent, x.oid.toString(), x.name, x.schema, x.is_system));
     }
 }
-

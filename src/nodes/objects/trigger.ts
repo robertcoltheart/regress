@@ -8,4 +8,3 @@ export class Trigger extends NodeObject {
         super(parent);
     }
 }
-

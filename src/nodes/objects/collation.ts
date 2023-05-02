@@ -14,4 +14,3 @@ export class Collation extends NodeObject {
         super(parent);
     }
 }
-

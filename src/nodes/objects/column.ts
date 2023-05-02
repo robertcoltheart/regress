@@ -8,4 +8,3 @@ export class Column extends NodeObject {
         super(parent);
     }
 }
-
