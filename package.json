@@ -305,6 +305,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "node-sql-parser": "^4.6.6",
     "pg": "^8.8.0",
     "uuid": "^9.0.0",
     "vscode-nls": "^5.2.0"
