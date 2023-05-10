@@ -1,4 +1,5 @@
 import type * as azdata from "azdata";
+import { Parser } from "node-sql-parser";
 import * as vscode from "vscode";
 
 export class QueryProvider implements azdata.QueryProvider {
@@ -31,11 +32,16 @@ export class QueryProvider implements azdata.QueryProvider {
         selection: azdata.ISelectionData,
         runOptions?: azdata.ExecutionPlanOptions | undefined
     ): Promise<void> {
-        // const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(encodeURI(ownerUri)));
-        // const content = document.getText();
+        const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(encodeURI(ownerUri)));
+        const content = document.getText();
+
+        const parser = new Parser();
+        const ast = parser.parse(content, {
+            database: "PostgresQL"
+        });
 
         this.onQueryComplete.fire({
-            ownerUri: ownerUri,
+            ownerUri: ast.tableList.join(","),
             batchSummaries: []
         });
 

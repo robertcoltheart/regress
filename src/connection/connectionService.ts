@@ -2,34 +2,84 @@ import { Client } from "pg";
 import { ConnectionInfo } from "./connectionInfo";
 import { type ConnectionType } from "./connectionType";
 import { type ConnectionDetails } from "./connectionDetails";
+import { CancellationTokenSource } from "vscode";
+import AsyncLock from "async-lock";
 
 export class ConnectionService {
     private readonly connections = new Map<string, ConnectionInfo>();
+
+    private readonly connectionCancellation = new Map<[string, ConnectionType], CancellationTokenSource>();
+
+    private readonly lock = new AsyncLock();
 
     public async connect(
         ownerUri: string,
         connectionType: ConnectionType,
         details: ConnectionDetails
-    ): Promise<Client> {
+    ): Promise<Client | undefined> {
         let info = this.connections.get(ownerUri);
 
-        if (info === undefined) {
-            info = new ConnectionInfo();
+        if (info === undefined || !info.details.equals(details)) {
+            if (info !== undefined) {
+                await this.closeConnections(info);
+            }
 
+            info = new ConnectionInfo(details);
             this.connections.set(ownerUri, info);
-        } else {
-            await this.closeConnections(info);
         }
 
-        const client = new Client({
-            host: details.host,
-            database: details.database,
-            port: details.port,
-            user: details.username,
-            password: details.password
-        });
+        let client = info.getConnection(connectionType);
 
-        await client.connect();
+        if (client != null) {
+            return client;
+        }
+
+        const cancellationKey: [string, ConnectionType] = [ownerUri, connectionType];
+        const cancellationSource = new CancellationTokenSource();
+
+        this.lock.acquire(
+            "connect",
+            () => {
+                const token = this.connectionCancellation.get(cancellationKey);
+
+                if (token != null) {
+                    token.cancel();
+                }
+
+                this.connectionCancellation.set(cancellationKey, cancellationSource);
+            },
+            () => {}
+        );
+
+        try {
+            client = new Client({
+                host: details.host,
+                database: details.database,
+                port: details.port,
+                user: details.username,
+                password: details.password
+            });
+
+            await client.connect();
+        } finally {
+            this.lock.acquire(
+                "connect",
+                () => {
+                    const token = this.connectionCancellation.get(cancellationKey);
+
+                    if (token != null && token === cancellationSource) {
+                        this.connectionCancellation.delete(cancellationKey);
+                    }
+                },
+                () => {}
+            );
+        }
+
+        if (cancellationSource.token.isCancellationRequested) {
+            await client.end();
+
+            return undefined;
+        }
 
         info.addConnection(connectionType, client);
 
@@ -44,6 +94,10 @@ export class ConnectionService {
         }
 
         return await this.closeConnections(info, connectionType);
+    }
+
+    public getConnectionInfo(ownerUri: string): ConnectionInfo | undefined {
+        return this.connections.get(ownerUri);
     }
 
     public getConnection(ownerUri: string, connectionType: ConnectionType): Client | undefined {

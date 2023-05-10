@@ -28,6 +28,11 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
 
         try {
             const client = await this.connections.connect(sessionId, ConnectionType.ObjectExplorer, details);
+
+            if (client === undefined) {
+                throw Error("Connection was cancelled during connect");
+            }
+
             const server = new Server(
                 details.host,
                 details.host,
@@ -129,7 +134,13 @@ export class ObjectExplorerProvider implements azdata.ObjectExplorerProvider {
         const details = ConnectionDetails.clone(session.details, database);
         const key = session.id + database;
 
-        return await this.connections.connect(key, ConnectionType.ObjectExplorer, details);
+        const client = await this.connections.connect(key, ConnectionType.ObjectExplorer, details);
+
+        if (client === undefined) {
+            throw Error("Connection was cancelled during connect");
+        }
+
+        return client;
     }
 
     private async expandOrRefreshNode(refresh: boolean, nodeInfo: azdata.ExpandNodeInfo): Promise<boolean> {

@@ -34,4 +34,14 @@ export class ConnectionDetails {
     public getUrnBase(): string {
         return `//${this.username}@${this.host}:${this.port}/`;
     }
+
+    public equals(details: ConnectionDetails): boolean {
+        return (
+            details.host === this.host &&
+            details.database === this.database &&
+            details.port === this.port &&
+            details.username === this.username &&
+            details.password === this.password
+        );
+    }
 }

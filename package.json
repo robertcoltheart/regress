@@ -305,6 +305,8 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@types/async-lock": "^1.4.0",
+    "async-lock": "^1.4.0",
     "node-sql-parser": "^4.6.6",
     "pg": "^8.8.0",
     "uuid": "^9.0.0",

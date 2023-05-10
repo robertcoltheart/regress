@@ -14,13 +14,17 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
 
     private readonly onConnectionChanged: vscode.EventEmitter<azdata.ChangedConnectionInfo> = new vscode.EventEmitter();
 
-    constructor(private readonly connectionService: ConnectionService) {}
+    constructor(private readonly connections: ConnectionService) {}
 
     async connect(connectionUri: string, connectionInfo: azdata.ConnectionInfo): Promise<boolean> {
         const details = ConnectionDetails.create(connectionInfo);
 
+        return await this.connectAndNotify(connectionUri, details);
+    }
+
+    async connectAndNotify(connectionUri: string, details: ConnectionDetails): Promise<boolean> {
         try {
-            const client = await this.connectionService.connect(connectionUri, ConnectionType.Default, details);
+            const client = await this.connections.connect(connectionUri, ConnectionType.Default, details);
 
             if (client === undefined) {
                 await vscode.window.showErrorMessage("Failed to connect");
@@ -61,7 +65,7 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     async disconnect(connectionUri: string): Promise<boolean> {
-        return await this.connectionService.disconnect(connectionUri, ConnectionType.Default);
+        return await this.connections.disconnect(connectionUri, ConnectionType.Default);
     }
 
     cancelConnect(connectionUri: string): Thenable<boolean> {
@@ -69,10 +73,37 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
     }
 
     async listDatabases(connectionUri: string): Promise<azdata.ListDatabasesResult> {
-        throw new Error("Method not implemented.");
+        const client = this.connections.getConnection(connectionUri, ConnectionType.Default);
+
+        if (client == null) {
+            throw Error("Connection not found for ");
+        }
+
+        const result = await client.query(`
+SELECT
+    db.datname AS "name",
+    datistemplate AS is_system
+FROM
+    pg_database db
+LEFT OUTER JOIN pg_tablespace ta ON db.dattablespace = ta.oid
+ORDER BY datname;`);
+
+        return {
+            databaseNames: result.rows.filter((db) => db.is_system === false).map((db) => db.name)
+        };
     }
 
     async changeDatabase(connectionUri: string, newDatabase: string): Promise<boolean> {
+        const info = this.connections.getConnectionInfo(connectionUri);
+
+        if (info == null) {
+            return false;
+        }
+
+        const details = ConnectionDetails.clone(info.details, newDatabase);
+
+        await this.connections.connect(connectionUri, ConnectionType.Default, details);
+
         throw new Error("Method not implemented.");
     }
 

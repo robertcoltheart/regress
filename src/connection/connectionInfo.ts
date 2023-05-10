@@ -1,8 +1,11 @@
 import { type Client } from "pg";
 import { type ConnectionType } from "./connectionType";
+import { type ConnectionDetails } from "./connectionDetails";
 
 export class ConnectionInfo {
     private readonly connections = new Map<ConnectionType, Client>();
+
+    constructor(public details: ConnectionDetails) {}
 
     public getConnection(connectionType: ConnectionType): Client | undefined {
         return this.connections.get(connectionType);
