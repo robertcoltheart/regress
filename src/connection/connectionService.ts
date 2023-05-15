@@ -86,6 +86,26 @@ export class ConnectionService {
         return client;
     }
 
+    public async cancelConnect(ownerUri: string, connectionType: ConnectionType): Promise<boolean> {
+        const cancellationKey: [string, ConnectionType] = [ownerUri, connectionType];
+
+        this.lock.acquire(
+            "connect",
+            () => {
+                const token = this.connectionCancellation.get(cancellationKey);
+
+                if (token != null) {
+                    token.cancel();
+
+                    return true;
+                }
+            },
+            () => {}
+        );
+
+        return false;
+    }
+
     public async disconnect(ownerUri: string, connectionType: ConnectionType): Promise<boolean> {
         const info = this.connections.get(ownerUri);
 

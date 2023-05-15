@@ -68,8 +68,8 @@ export class ConnectionProvider implements azdata.ConnectionProvider {
         return await this.connections.disconnect(connectionUri, ConnectionType.Default);
     }
 
-    cancelConnect(connectionUri: string): Thenable<boolean> {
-        return Promise.resolve(true);
+    async cancelConnect(connectionUri: string): Promise<boolean> {
+        return await this.connections.cancelConnect(connectionUri, ConnectionType.Default);
     }
 
     async listDatabases(connectionUri: string): Promise<azdata.ListDatabasesResult> {
@@ -102,9 +102,9 @@ ORDER BY datname;`);
 
         const details = ConnectionDetails.clone(info.details, newDatabase);
 
-        await this.connections.connect(connectionUri, ConnectionType.Default, details);
+        const client = await this.connections.connect(connectionUri, ConnectionType.Default, details);
 
-        throw new Error("Method not implemented.");
+        return client !== undefined;
     }
 
     rebuildIntelliSenseCache(connectionUri: string): Thenable<void> {

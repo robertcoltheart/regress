@@ -36,12 +36,17 @@ export class QueryProvider implements azdata.QueryProvider {
         const content = document.getText();
 
         const parser = new Parser();
-        const ast = parser.parse(content, {
+        const parsed = parser.parse(content, {
+            database: "PostgresQL"
+        });
+        const ast = parser.astify(content, {
             database: "PostgresQL"
         });
 
+        const sql = parser.sqlify(ast);
+
         this.onQueryComplete.fire({
-            ownerUri: ast.tableList.join(","),
+            ownerUri: parsed.tableList.join(",") + sql,
             batchSummaries: []
         });
 
